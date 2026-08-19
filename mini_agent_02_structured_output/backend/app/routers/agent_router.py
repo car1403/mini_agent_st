@@ -4,14 +4,14 @@ from fastapi import APIRouter, HTTPException
 from pydantic import ValidationError
 
 from app.config import settings
-from app.providers import generate, generate_structured, provider_status
+from app.providers import generate, generate_structured, get_structured_model, provider_status
 from app.schemas import (
     ConceptCompareResult, GenerateRequest, GenerateResult, MessageRequest,
     PromptPreviewRequest, PromptPreviewResult, ProviderCompareRequest,
     ProviderCompareResult, ProviderComparisonItem, StructuredCompareRequest,
-    StructuredCompareResult, StructuredComparisonItem, StructuredTravelRequest,
-    StructuredTravelResult, TravelIntentResult, TravelPlan,
-    TravelValidationRequest, TravelValidationResult,
+    StructuredCompareResult, StructuredComparisonItem, StructuredOutputRequest,
+    StructuredOutputResult, StructuredValidationRequest,
+    StructuredValidationResult, TravelIntentResult,
 )
 from app.services.concept_service import compare_decisions
 from app.services.prompt_service import build_prompt
@@ -69,21 +69,44 @@ def preview_prompt(payload: PromptPreviewRequest) -> PromptPreviewResult:
     return PromptPreviewResult(**payload.model_dump(), prompt=build_prompt(payload.role, payload.instruction, payload.context, payload.constraint))
 
 
-@agent_router.post("/api/structured/validate", response_model=TravelValidationResult)
-def validate_travel_plan(payload: TravelValidationRequest) -> TravelValidationResult:
+@agent_router.post("/api/structured/validate", response_model=StructuredValidationResult)
+def validate_structured_output(
+    payload: StructuredValidationRequest,
+) -> StructuredValidationResult:
     try:
-        return TravelValidationResult(valid=True, data=TravelPlan.model_validate(payload.payload))
+        model_class = get_structured_model(payload.schema_type)
+        return StructuredValidationResult(
+            schema_type=payload.schema_type,
+            valid=True,
+            data=model_class.model_validate(payload.payload),
+        )
     except ValidationError as error:
         errors = [{"field": ".".join(map(str, item["loc"])), "message": item["msg"], "type": item["type"]} for item in error.errors()]
-        return TravelValidationResult(valid=False, errors=errors)
+        return StructuredValidationResult(
+            schema_type=payload.schema_type, valid=False, errors=errors
+        )
 
 
-@agent_router.post("/api/structured/travel-plan", response_model=StructuredTravelResult)
-def create_structured_travel_plan(payload: StructuredTravelRequest) -> StructuredTravelResult:
+@agent_router.post("/api/structured/generate", response_model=StructuredOutputResult)
+@agent_router.post(
+    "/api/structured/travel-plan",
+    response_model=StructuredOutputResult,
+    include_in_schema=False,
+)
+def create_structured_output(payload: StructuredOutputRequest) -> StructuredOutputResult:
     selected = payload.provider or settings.llm_provider
     try:
-        result = generate_structured(selected, payload.system_prompt, payload.message)
-        return StructuredTravelResult(provider=result.provider, model=result.model, content=TravelPlan.model_validate(result.content), latency_ms=result.latency_ms)
+        model_class = get_structured_model(payload.schema_type)
+        result = generate_structured(
+            selected, payload.system_prompt, payload.message, payload.schema_type
+        )
+        return StructuredOutputResult(
+            provider=result.provider,
+            model=result.model,
+            schema_type=payload.schema_type,
+            content=model_class.model_validate(result.content),
+            latency_ms=result.latency_ms,
+        )
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:
@@ -95,8 +118,11 @@ def compare_structured_outputs(payload: StructuredCompareRequest) -> StructuredC
     items: list[StructuredComparisonItem] = []
     for selected in payload.providers:
         try:
-            result = generate_structured(selected, payload.system_prompt, payload.message)
-            items.append(StructuredComparisonItem(provider=result.provider, status="success", model=result.model, content=TravelPlan.model_validate(result.content), latency_ms=result.latency_ms))
+            model_class = get_structured_model(payload.schema_type)
+            result = generate_structured(
+                selected, payload.system_prompt, payload.message, payload.schema_type
+            )
+            items.append(StructuredComparisonItem(provider=result.provider, status="success", model=result.model, schema_type=payload.schema_type, content=model_class.model_validate(result.content), latency_ms=result.latency_ms))
         except Exception as error:
-            items.append(StructuredComparisonItem(provider=selected, status="error", error=str(error)))
+            items.append(StructuredComparisonItem(provider=selected, status="error", schema_type=payload.schema_type, error=str(error)))
     return StructuredCompareResult(request_count=len(payload.providers), results=items)
