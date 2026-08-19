@@ -1,4 +1,4 @@
-"""실제 Tool Use 예제가 공유하는 Mini Agent 03 API Client입니다."""
+"""Tool Use 실제 호출 예제가 공유하는 Mini Agent 03 API Client입니다."""
 
 import os
 from typing import Any
@@ -20,23 +20,27 @@ def post(path: str, payload: dict[str, Any]) -> dict[str, Any]:
     return response.json()
 
 
-def select_tool(message: str, tool_choice: str = "auto", description_variant: str = "clear") -> dict[str, Any]:
+def select_tool(
+    message: str,
+    tool_choice: str = "auto",
+) -> dict[str, Any]:
     # 이 API는 Tool Call을 제안할 뿐 Tool 함수를 실행하지 않습니다.
     return post("/api/tools/select", {
         "provider": PROVIDER,
         "message": message,
         "tool_choice": tool_choice,
-        "description_variant": description_variant,
     })
 
 
-def complete_loop(message: str, tool_choice: str = "auto", description_variant: str = "clear") -> dict[str, Any]:
+def complete_loop(
+    message: str,
+    tool_choice: str = "auto",
+) -> dict[str, Any]:
     # complete API는 선택·검증·실행·최종 답변의 전체 Loop를 수행합니다.
     return post("/api/tools/complete", {
         "provider": PROVIDER,
         "message": message,
         "tool_choice": tool_choice,
-        "description_variant": description_variant,
     })
 
 
@@ -48,4 +52,4 @@ def print_result(label: str, result: dict[str, Any]) -> None:
 def print_help(error: httpx.HTTPError) -> None:
     print("Mini Agent 03 Backend 호출 실패:", error)
     print("Backend와 BACKEND_API_URL을 확인하세요.")
-    print("실제 비교는 TOOL_EXAMPLE_PROVIDER를 gemini, openai, ollama로 설정하세요.")
+    print("실제 비교는 TOOL_EXAMPLE_PROVIDER를 gemini, openai, ollama 중 하나로 설정하세요.")

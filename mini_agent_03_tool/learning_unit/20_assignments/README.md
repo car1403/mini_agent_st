@@ -9,14 +9,15 @@
 1. Pydantic 입력 Schema
 2. 정상·필수값 누락·범위 오류 예제
 3. Tool 선택 규칙
-4. 필수값 누락 시 `missing_arguments`와 추가 질문
+4. 필수값이 부족할 때의 `missing_arguments`와 추가 질문
 5. Allowlist 등록과 안전 실행
 6. Tool Result를 이용한 최종 답변
 7. Streamlit 실행 화면
 
 ## 선택 과제
 
-Gemini·GPT·Ollama/Llama 중 사용 가능한 두 Provider의 실제 Tool Call을 비교하고 Tool 설명과 Choice에 따라 arguments가 달라진 이유를 설명합니다.
+Gemini·GPT·Ollama/Llama 중 사용 가능한 두 Provider의 실제 Tool Call을 비교하고,
+사용자 메시지와 Provider에 따라 Tool 이름과 arguments가 달라진 이유를 설명합니다.
 
 ## 완료 기준
 

@@ -15,7 +15,7 @@ Streamlit app_pages
 ## 새로 배우는 내용
 
 - Python 함수·Tool Schema·Tool Call·Tool Result
-- 명확한 설명과 모호한 설명의 선택 결과 비교
+- 현재 날씨와 미래 예보 Tool의 선택 결과 비교
 - `auto`·`none`·`required` Tool Choice
 - Provider 원본 Tool Call과 정규화 결과
 - 누락값을 추측하지 않는 추가 질문
@@ -56,3 +56,21 @@ streamlit run .\frontend\app.py
 ```
 
 기본 Provider는 Mock입니다. 먼저 Mock으로 전체 Agent Loop를 확인한 다음 준비된 Provider만 선택적으로 비교합니다.
+
+## 실제 날씨 Tool
+
+날씨 Tool은 현재 상태와 미래 예보를 구분합니다.
+
+- `get_current_weather`: 현재 기온·체감 온도·강수량·바람
+- `get_weather_forecast`: 지정한 미래 날짜의 최고·최저 기온과 강수 확률
+
+기본 `WEATHER_MODE=mock`은 인터넷 없이 결정적으로 실행됩니다. `.env`에서 다음과
+같이 바꾸면 Tool 실행 단계가 Open-Meteo Geocoding API와 Forecast API를 호출합니다.
+
+```env
+WEATHER_MODE=open_meteo
+```
+
+Open-Meteo의 현재 상태는 관측소 실측값이 아니라 최신 기상 모델 기반 값입니다.
+외부 API 오류가 발생하면 실제 값처럼 Mock으로 조용히 대체하지 않고 Tool 오류를
+반환합니다.

@@ -54,17 +54,17 @@ def compare_structured_outputs(providers: list[str], message: str):
     return request("POST", "/api/structured/compare", json=payload)
 
 
-def get_tools(variant: str = "clear"):
-    return request("GET", f"/api/tools?variant={variant}")
+def get_tools():
+    return request("GET", "/api/tools")
 
 
-def select_tool(provider: str, message: str, tool_choice: str = "auto", description_variant: str = "clear"):
-    payload = {"provider": provider, "message": message, "tool_choice": tool_choice, "description_variant": description_variant}
+def select_tool(provider: str, message: str, tool_choice: str = "auto"):
+    payload = {"provider": provider, "message": message, "tool_choice": tool_choice}
     return request("POST", "/api/tools/select", json=payload)
 
 
-def compare_tools(providers: list[str], message: str, tool_choice: str = "auto", description_variant: str = "clear"):
-    payload = {"providers": providers, "message": message, "tool_choice": tool_choice, "description_variant": description_variant}
+def compare_tools(providers: list[str], message: str, tool_choice: str = "auto"):
+    payload = {"providers": providers, "message": message, "tool_choice": tool_choice}
     return request("POST", "/api/tools/compare", json=payload)
 
 
@@ -73,8 +73,8 @@ def run_tool(tool_name: str, arguments: dict[str, Any]):
     return request("POST", "/api/tools/run", json=payload)
 
 
-def complete_tool_loop(provider: str, message: str, tool_choice: str = "auto", description_variant: str = "clear"):
-    payload = {"provider": provider, "message": message, "tool_choice": tool_choice, "description_variant": description_variant}
+def complete_tool_loop(provider: str, message: str, tool_choice: str = "auto"):
+    payload = {"provider": provider, "message": message, "tool_choice": tool_choice}
     return request("POST", "/api/tools/complete", json=payload)
 
 

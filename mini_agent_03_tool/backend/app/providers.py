@@ -44,18 +44,21 @@ def generate_structured_mock(system_prompt: str, message: str) -> ProviderResult
 
 
 def select_tool_mock(
-    message: str, tool_choice: str = "auto", description_variant: str = "clear"
+    message: str, tool_choice: str = "auto"
 ) -> ToolDecision:
     if tool_choice == "none":
         return ToolDecision("mock", "deterministic-travel-mock", None, {}, "Tool 사용 금지", 1.0, 0)
     decision = select_mock_tool(message)
     if tool_choice == "required" and decision["tool_name"] is None:
-        decision = {"tool_name": "get_weather", "reason": "Tool 사용 필수 모드", "confidence": 0.5}
+        decision = {"tool_name": "get_current_weather", "reason": "Tool 사용 필수 모드", "confidence": 0.5}
     today = date.today()
     arguments: dict[str, Any] = {}
-    if decision["tool_name"] == "get_weather":
+    if decision["tool_name"] == "get_current_weather":
         city = _find_city(message)
-        target_date = today.isoformat() if "오늘" in message else ((today + timedelta(days=1)).isoformat() if "내일" in message else None)
+        arguments = {"city": city} if city else {}
+    elif decision["tool_name"] == "get_weather_forecast":
+        city = _find_city(message)
+        target_date = (today + timedelta(days=1)).isoformat() if "내일" in message else None
         arguments = {key: value for key, value in {"city": city, "target_date": target_date}.items() if value is not None}
     elif decision["tool_name"] == "search_hotels":
         city = _find_city(message)
@@ -73,7 +76,8 @@ def _find_city(message: str) -> str | None:
 
 def _add_clarification(decision: ToolDecision) -> ToolDecision:
     required = {
-        "get_weather": ["city", "target_date"],
+        "get_current_weather": ["city"],
+        "get_weather_forecast": ["city", "target_date"],
         "search_hotels": ["city", "check_in", "check_out", "guests"],
         "search_attractions": ["city"],
     }
@@ -106,8 +110,8 @@ def generate_structured_openai(system_prompt: str, message: str) -> ProviderResu
     return ProviderResult("openai", settings.openai_model, response.output_parsed.model_dump(), round((perf_counter() - started) * 1000))
 
 
-def select_tool_openai(message: str, tool_choice: str = "auto", description_variant: str = "clear") -> ToolDecision:
-    definitions = get_tool_definitions(description_variant)
+def select_tool_openai(message: str, tool_choice: str = "auto") -> ToolDecision:
+    definitions = get_tool_definitions()
     tools = [{"type": "function", "name": tool["name"], "description": tool["description"], "parameters": tool["input_schema"]} for tool in definitions]
     started = perf_counter()
     response = _openai_client().responses.create(model=settings.openai_model, instructions="필요한 경우에만 여행 조회 Tool 하나를 선택하세요.", input=message, tools=tools, tool_choice=tool_choice)
@@ -141,9 +145,9 @@ def generate_structured_gemini(system_prompt: str, message: str) -> ProviderResu
     return ProviderResult("gemini", settings.gemini_model, parsed.model_dump(), round((perf_counter() - started) * 1000))
 
 
-def select_tool_gemini(message: str, tool_choice: str = "auto", description_variant: str = "clear") -> ToolDecision:
+def select_tool_gemini(message: str, tool_choice: str = "auto") -> ToolDecision:
     client, types = _gemini_client()
-    definitions = get_tool_definitions(description_variant)
+    definitions = get_tool_definitions()
     declarations = [types.FunctionDeclaration(name=tool["name"], description=tool["description"], parameters_json_schema=tool["input_schema"]) for tool in definitions]
     started = perf_counter()
     instruction = "반드시 여행 조회 Tool 하나를 선택하세요. " if tool_choice == "required" else ""
@@ -177,8 +181,8 @@ def generate_structured_ollama(system_prompt: str, message: str) -> ProviderResu
     return ProviderResult("ollama", settings.ollama_model, parsed.model_dump(), round((perf_counter() - started) * 1000))
 
 
-def select_tool_ollama(message: str, tool_choice: str = "auto", description_variant: str = "clear") -> ToolDecision:
-    definitions = get_tool_definitions(description_variant)
+def select_tool_ollama(message: str, tool_choice: str = "auto") -> ToolDecision:
+    definitions = get_tool_definitions()
     tools = [{"type": "function", "function": {"name": tool["name"], "description": tool["description"], "parameters": tool["input_schema"]}} for tool in definitions]
     instruction = "반드시 여행 조회 Tool 하나를 선택하세요." if tool_choice == "required" else "필요한 경우에만 여행 조회 Tool 하나를 선택하세요."
     started = perf_counter(); body = _ollama_chat(instruction, message, tools=tools)
@@ -200,12 +204,12 @@ def generate_structured(provider: str, system_prompt: str, message: str) -> Prov
     return handlers[provider](system_prompt, message)
 
 
-def select_tool(provider: str, message: str, tool_choice: str = "auto", description_variant: str = "clear") -> ToolDecision:
+def select_tool(provider: str, message: str, tool_choice: str = "auto") -> ToolDecision:
     if tool_choice == "none":
         return ToolDecision(provider, "tool-choice-none", None, {}, "Tool 사용 금지", 1.0, 0)
     handlers = {"mock": select_tool_mock, "gemini": select_tool_gemini, "openai": select_tool_openai, "ollama": select_tool_ollama}
     if provider not in handlers: raise ValueError(f"지원하지 않는 Provider입니다: {provider}")
-    return handlers[provider](message, tool_choice, description_variant)
+    return handlers[provider](message, tool_choice)
 
 
 def provider_status() -> list[dict]:

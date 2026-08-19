@@ -3,8 +3,10 @@
 
 def select_tool(message: str) -> dict:
     # 실제 LLM 전 단계에서 선택 결과의 형태를 익히기 위한 단순 규칙 기반 Mock입니다.
-    if any(word in message for word in ("날씨", "기온", "우산", "비예보")):
-        return {"tool_name": "get_weather", "reason": "날씨 관련 요청", "confidence": 0.92}
+    if any(word in message for word in ("날씨", "기온", "우산", "비예보", "비가")):
+        if any(word in message for word in ("내일", "모레", "주말", "예보", "다음 주")):
+            return {"tool_name": "get_weather_forecast", "reason": "미래 날씨 예보 요청", "confidence": 0.94}
+        return {"tool_name": "get_current_weather", "reason": "현재 날씨 요청", "confidence": 0.94}
     if any(word in message for word in ("호텔", "숙소", "체크인")):
         return {"tool_name": "search_hotels", "reason": "숙소 관련 요청", "confidence": 0.94}
     if any(word in message for word in ("관광지", "가볼", "명소")):
@@ -15,7 +17,8 @@ def select_tool(message: str) -> dict:
 
 if __name__ == "__main__":
     messages = [
-        "부산 날씨를 알려줘",
+        "지금 부산 날씨를 알려줘",
+        "내일 부산에 비가 올까?",
         "제주 숙소를 찾아줘",
         "서울 관광지를 추천해줘",
         "여행을 준비하고 있어요",

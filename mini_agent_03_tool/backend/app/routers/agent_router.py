@@ -130,19 +130,15 @@ def text_to_speech(payload: TtsRequest) -> Response:
 
 
 @agent_router.get("/api/tools")
-def tools(variant: str = "clear") -> dict:
-    try:
-        definitions = get_tool_definitions(variant)
-    except ValueError as error:
-        raise HTTPException(status_code=422, detail=str(error)) from error
-    return {"variant": variant, "tools": definitions, "note": "모든 Tool은 조회용 Mock이며 실제 예약이나 결제를 실행하지 않습니다."}
+def tools() -> dict:
+    return {"tools": get_tool_definitions(), "note": "모든 Tool은 조회 전용이며 예약이나 결제를 실행하지 않습니다."}
 
 
 @agent_router.post("/api/tools/select", response_model=ToolSelectionResult)
 def choose_tool(payload: ToolSelectRequest) -> ToolSelectionResult:
     selected = payload.provider or settings.llm_provider
     try:
-        return ToolSelectionResult.model_validate(asdict(select_tool(selected, payload.message, payload.tool_choice, payload.description_variant)))
+        return ToolSelectionResult.model_validate(asdict(select_tool(selected, payload.message, payload.tool_choice)))
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:
@@ -154,7 +150,7 @@ def compare_tool_selection(payload: ToolCompareRequest) -> ToolCompareResult:
     items: list[ToolComparisonItem] = []
     for selected in payload.providers:
         try:
-            decision = ToolSelectionResult.model_validate(asdict(select_tool(selected, payload.message, payload.tool_choice, payload.description_variant)))
+            decision = ToolSelectionResult.model_validate(asdict(select_tool(selected, payload.message, payload.tool_choice)))
             items.append(ToolComparisonItem(provider=selected, status="success", decision=decision))
         except Exception as error:
             items.append(ToolComparisonItem(provider=selected, status="error", error=str(error)))
@@ -182,7 +178,7 @@ def _run_tool_safely(tool_name: str, arguments: dict) -> ToolRunResult:
 def complete_tool_loop(payload: ToolCompleteRequest) -> ToolCompleteResult:
     selected = payload.provider or settings.llm_provider
     try:
-        decision = ToolSelectionResult.model_validate(asdict(select_tool(selected, payload.message, payload.tool_choice, payload.description_variant)))
+        decision = ToolSelectionResult.model_validate(asdict(select_tool(selected, payload.message, payload.tool_choice)))
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:

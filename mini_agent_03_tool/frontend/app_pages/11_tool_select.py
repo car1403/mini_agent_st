@@ -7,9 +7,8 @@ from core.api_client import BackendAPIError
 st.title("🧭 Tool 선택")
 st.caption("LLM은 Tool Call을 제안할 뿐, 이 화면에서는 아직 함수를 실행하지 않습니다.")
 
-description_variant = st.radio("Tool 설명", ["clear", "vague"], horizontal=True)
 try:
-    registry = get_tools(description_variant)
+    registry = get_tools()
     with st.expander("허용된 조회 Tool과 입력 Schema"):
         st.json(registry)
 except BackendAPIError as error:
@@ -17,11 +16,11 @@ except BackendAPIError as error:
 
 provider = st.selectbox("선택 Provider", ["mock", "gemini", "openai", "ollama"])
 tool_choice = st.selectbox("Tool Choice", ["auto", "none", "required"])
-message = st.selectbox("요청", ["오늘 부산 날씨를 알려줘.", "부산 숙소를 찾아줘.", "제주 관광지를 추천해 줘.", "여행 준비를 도와줘."])
+message = st.selectbox("요청", ["지금 부산에 비가 와?", "내일 부산에 비가 올까?", "부산 숙소를 찾아줘.", "제주 관광지를 추천해 줘.", "여행 준비를 도와줘."])
 
 if st.button("Tool Call 제안 받기"):
     try:
-        decision = select_tool(provider, message, tool_choice, description_variant)
+        decision = select_tool(provider, message, tool_choice)
         st.session_state["tool_decision"] = decision
         st.json(decision)
         if decision["needs_clarification"]:
@@ -36,6 +35,6 @@ st.divider()
 providers = st.multiselect("선택 결과 비교", ["mock", "gemini", "openai", "ollama"], default=["mock"])
 if st.button("Provider별 Tool 선택 비교", disabled=not providers):
     try:
-        st.json(compare_tools(providers, message, tool_choice, description_variant))
+        st.json(compare_tools(providers, message, tool_choice))
     except BackendAPIError as error:
         st.error(str(error))

@@ -1,3 +1,5 @@
+from datetime import date, timedelta
+
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -17,15 +19,8 @@ def test_tool_registry_contains_read_only_tools() -> None:
     response = client.get("/api/tools")
     assert response.status_code == 200
     names = {item["name"] for item in response.json()["tools"]}
-    assert names == {"get_weather", "search_hotels", "search_attractions"}
+    assert names == {"get_current_weather", "get_weather_forecast", "search_hotels", "search_attractions"}
     assert "delete" not in names
-
-
-def test_tool_description_variants_keep_same_contract() -> None:
-    clear = client.get("/api/tools?variant=clear").json()["tools"]
-    vague = client.get("/api/tools?variant=vague").json()["tools"]
-    assert [item["name"] for item in clear] == [item["name"] for item in vague]
-    assert clear[0]["description"] != vague[0]["description"]
 
 
 def test_mock_selects_hotel_without_running_it() -> None:
@@ -44,7 +39,7 @@ def test_tool_choice_none_prevents_selection() -> None:
 
 
 def test_allowed_tool_runs_after_validation() -> None:
-    response = client.post("/api/tools/run", json={"tool_name": "get_weather", "arguments": {"city": "부산", "target_date": "2026-08-10"}})
+    response = client.post("/api/tools/run", json={"tool_name": "get_current_weather", "arguments": {"city": "부산"}})
     assert response.status_code == 200
     assert response.json()["success"] is True
     assert response.json()["data"]["source"] == "mock"
@@ -61,10 +56,10 @@ def test_unknown_argument_is_blocked_by_schema() -> None:
     response = client.post(
         "/api/tools/run",
         json={
-            "tool_name": "get_weather",
+            "tool_name": "get_weather_forecast",
             "arguments": {
                 "city": "부산",
-                "target_date": "2026-08-10",
+                "target_date": (date.today() + timedelta(days=1)).isoformat(),
                 "unknown": True,
             },
         },
@@ -72,6 +67,23 @@ def test_unknown_argument_is_blocked_by_schema() -> None:
     assert response.status_code == 200
     assert response.json()["success"] is False
     assert response.json()["error"]["code"] == "TOOL_VALIDATION_ERROR"
+
+
+def test_forecast_rejects_past_and_too_distant_dates() -> None:
+    for target_date in (
+        (date.today() - timedelta(days=1)).isoformat(),
+        (date.today() + timedelta(days=17)).isoformat(),
+    ):
+        response = client.post(
+            "/api/tools/run",
+            json={
+                "tool_name": "get_weather_forecast",
+                "arguments": {"city": "부산", "target_date": target_date},
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["success"] is False
+        assert response.json()["error"]["code"] == "TOOL_VALIDATION_ERROR"
 
 
 def test_invalid_hotel_dates_return_validation_error() -> None:
@@ -96,9 +108,18 @@ def test_mock_agent_loop_uses_tool_result() -> None:
     )
     assert response.status_code == 200
     body = response.json()
-    assert body["decision"]["tool_name"] == "get_weather"
+    assert body["decision"]["tool_name"] == "get_current_weather"
     assert body["tool_result"]["success"] is True
-    assert "get_weather" in body["final_answer"]
+    assert "get_current_weather" in body["final_answer"]
+
+
+def test_mock_selects_forecast_for_future_weather() -> None:
+    response = client.post("/api/tools/select", json={"provider": "mock", "message": "내일 부산에 비가 올까?"})
+    assert response.status_code == 200
+    body = response.json()
+    assert body["tool_name"] == "get_weather_forecast"
+    assert body["arguments"]["city"] == "부산"
+    assert "target_date" in body["arguments"]
     assert [item["stage"] for item in body["trace"]] == ["tool_selection", "tool_result", "final_answer"]
 
 

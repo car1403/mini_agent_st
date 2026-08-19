@@ -1,47 +1,78 @@
-"""Allowlist 확인과 Schema 검증을 통과한 조회 Tool만 실행합니다."""
+"""현재·예보 Tool을 Allowlist와 Schema 검증 후 실행하고 답변으로 조립합니다."""
 
-from datetime import date
-from typing import Callable
+from collections.abc import Callable
+from datetime import date, timedelta
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, model_validator
 
 
-class WeatherInput(BaseModel):
-    # LLM이 정의하지 않은 arguments를 끼워 넣어도 실행 전에 차단합니다.
+class CurrentWeatherInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    city: str = Field(min_length=1)
+
+
+class WeatherForecastInput(BaseModel):
     model_config = ConfigDict(extra="forbid")
     city: str = Field(min_length=1)
     target_date: date
 
+    @model_validator(mode="after")
+    def validate_target_date(self) -> "WeatherForecastInput":
+        today = date.today()
+        if self.target_date < today:
+            raise ValueError("과거 날짜의 예보는 조회할 수 없습니다.")
+        if self.target_date > today + timedelta(days=16):
+            raise ValueError("예보는 오늘부터 16일 이내만 조회할 수 있습니다.")
+        return self
 
-def get_weather(arguments: dict) -> dict:
-    # 실제 함수 안에서도 입력 계약을 다시 검증하는 방어 계층을 둡니다.
-    args = WeatherInput.model_validate(arguments)
-    return {"city": args.city, "date": args.target_date.isoformat(), "condition": "맑음", "source": "mock"}
+
+def get_current_weather(arguments: dict) -> dict:
+    args = CurrentWeatherInput.model_validate(arguments)
+    return {"city": args.city, "condition": "맑음", "temperature_c": 26, "source": "mock"}
 
 
-# 실행 가능한 함수는 명시적 Allowlist에 등록된 조회 Tool로 제한합니다.
-TOOLS: dict[str, Callable[[dict], dict]] = {"get_weather": get_weather}
+def get_weather_forecast(arguments: dict) -> dict:
+    args = WeatherForecastInput.model_validate(arguments)
+    return {"city": args.city, "date": args.target_date.isoformat(), "condition": "구름 조금", "temperature_max_c": 27, "source": "mock"}
+
+
+TOOLS: dict[str, Callable[[dict], dict]] = {
+    "get_current_weather": get_current_weather,
+    "get_weather_forecast": get_weather_forecast,
+}
 
 
 def run_tool(tool_name: str, arguments: dict) -> dict:
-    # LLM이 제안한 이름을 getattr이나 eval로 직접 실행하지 않습니다.
     tool = TOOLS.get(tool_name)
     if tool is None:
         return {"success": False, "error": {"code": "TOOL_NOT_ALLOWED"}}
     try:
-        # 이름 검사 후 Schema 검증을 포함한 Tool 함수를 호출합니다.
-        return {"success": True, "data": tool(arguments)}
+        return {"success": True, "tool_name": tool_name, "data": tool(arguments)}
     except ValidationError as error:
-        details = [
-            {"field": ".".join(map(str, item["loc"])), "message": item["msg"]}
-            for item in error.errors()
-        ]
+        details = [{"field": ".".join(map(str, item["loc"])), "message": item["msg"]} for item in error.errors()]
         return {"success": False, "error": {"code": "TOOL_VALIDATION_ERROR", "details": details}}
-    except Exception as error:
-        return {"success": False, "error": {"code": "TOOL_EXECUTION_ERROR", "message": str(error)}}
+
+
+def make_final_answer(tool_result: dict) -> str:
+    if not tool_result["success"]:
+        return "Tool을 실행하지 못했습니다."
+    data = tool_result["data"]
+    if tool_result["tool_name"] == "get_current_weather":
+        return f"현재 {data['city']}은 {data['condition']}, {data['temperature_c']}도입니다."
+    return f"{data['date']} {data['city']} 예보는 {data['condition']}, 최고 {data['temperature_max_c']}도입니다."
 
 
 if __name__ == "__main__":
-    print("정상:", run_tool("get_weather", {"city": "부산", "target_date": "2026-08-12"}))
-    print("검증 실패:", run_tool("get_weather", {"city": "부산"}))
-    print("Allowlist 차단:", run_tool("delete_database", {}))
+    tomorrow = (date.today() + timedelta(days=1)).isoformat()
+    cases = [
+        ("get_current_weather", {"city": "부산"}),
+        ("get_weather_forecast", {"city": "부산", "target_date": tomorrow}),
+        ("get_weather_forecast", {"city": "부산", "target_date": (date.today() - timedelta(days=1)).isoformat()}),
+        ("get_weather_forecast", {"city": "부산", "target_date": (date.today() + timedelta(days=17)).isoformat()}),
+        ("get_weather_forecast", {"city": "부산", "unknown": True}),
+        ("delete_database", {}),
+    ]
+    for name, arguments in cases:
+        result = run_tool(name, arguments)
+        print(name, "→", result)
+        print("답변 →", make_final_answer(result))

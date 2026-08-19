@@ -9,7 +9,6 @@ st.caption("Agent의 선택·검증·실행·최종 답변 단계를 한 번에 
 
 provider = st.selectbox("Provider", ["mock", "gemini", "openai", "ollama"])
 tool_choice = st.selectbox("Tool Choice", ["auto", "none", "required"])
-description_variant = st.radio("Tool 설명", ["clear", "vague"], horizontal=True)
 message = st.selectbox(
     "질문",
     [
@@ -24,7 +23,7 @@ st.code("질문 → Tool Call → Backend 검증 → Tool Result → 최종 답�
 
 if st.button("Agent Loop 실행", type="primary"):
     try:
-        result = complete_tool_loop(provider, message, tool_choice, description_variant)
+        result = complete_tool_loop(provider, message, tool_choice)
         st.subheader("1. Tool Call 제안")
         st.json(result["decision"])
         st.subheader("2. Backend Tool Result")
