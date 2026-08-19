@@ -170,6 +170,8 @@ class AttractionArgs(BaseModel):
 
 class ToolSelectRequest(MessageRequest):
     provider: ProviderName | None = None
+    tool_choice: Literal["auto", "none", "required"] = "auto"
+    description_variant: Literal["clear", "vague"] = "clear"
 
 
 class ToolSelectionResult(BaseModel):
@@ -180,10 +182,16 @@ class ToolSelectionResult(BaseModel):
     reason: str
     confidence: float = Field(ge=0, le=1)
     latency_ms: int = 0
+    missing_arguments: list[str] = Field(default_factory=list)
+    needs_clarification: bool = False
+    follow_up_question: str = ""
+    raw_tool_call: dict[str, Any] | None = None
 
 
 class ToolCompareRequest(MessageRequest):
     providers: list[ProviderName] = Field(default_factory=lambda: ["mock"], min_length=1, max_length=4)
+    tool_choice: Literal["auto", "none", "required"] = "auto"
+    description_variant: Literal["clear", "vague"] = "clear"
 
 
 class ToolComparisonItem(BaseModel):
@@ -220,3 +228,4 @@ class ToolCompleteResult(BaseModel):
     decision: ToolSelectionResult
     tool_result: ToolRunResult | None = None
     final_answer: str
+    trace: list[dict[str, Any]] = Field(default_factory=list)

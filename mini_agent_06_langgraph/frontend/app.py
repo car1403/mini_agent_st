@@ -20,6 +20,7 @@ first_graph_page = st.Page("app_pages/13_first_graph.py", title="첫 번째 Grap
 reducer_page = st.Page("app_pages/14_reducer.py", title="Reducer")
 loop_page = st.Page("app_pages/09_graph_loop.py", title="반복과 종료")
 checkpoint_page = st.Page("app_pages/10_graph_checkpoint.py", title="Checkpoint")
+advanced_graph_page = st.Page("app_pages/15_advanced_graph.py", title="실제 Agent Graph")
 compare_page = st.Page("app_pages/11_graph_compare.py", title="Python과 비교")
 
 pages = [
@@ -31,6 +32,7 @@ pages = [
     reducer_page,
     loop_page,
     checkpoint_page,
+    advanced_graph_page,
     compare_page,
     environment_page,
     llm_page,
@@ -74,7 +76,8 @@ with st.sidebar:
         st.page_link(reducer_page, label="6-5. Reducer")
         st.page_link(loop_page, label="6-6. 반복과 안전한 종료")
         st.page_link(checkpoint_page, label="6-7. Checkpoint와 thread_id")
-        st.page_link(compare_page, label="6-8. Python과 LangGraph 비교")
+        st.page_link(advanced_graph_page, label="6-8. 실제 Agent Graph")
+        st.page_link(compare_page, label="6-9. Python과 LangGraph 비교")
 
     st.divider()
     st.caption("선택 · 완성본 확인")

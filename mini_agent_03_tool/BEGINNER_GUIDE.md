@@ -2,12 +2,14 @@
 
 ## 단위 예제
 
-1. `learning_unit/01_concept_example.py`
-2. `learning_unit/02_tool_schema_validation.py`
-3. `learning_unit/03_mock_tool_selection.py`
-4. `learning_unit/04_safe_tool_execution.py`
-5. `learning_unit/05_tool_result_to_answer.py`
-6. Backend 실행 후 `learning_unit/06_multi_provider_tool_calling.py`
+1. `learning_unit/00_tool_use_concepts.py`
+2. `learning_unit/01_tool_schema_validation.py`
+3. `learning_unit/02_mock_tool_selection.py`
+4. Backend 실행 후 `03_tool_description_before_after.py`부터 `06_missing_arguments_and_clarification.py`
+5. `learning_unit/07_safe_tool_execution.py`
+6. `learning_unit/08_tool_result_to_answer.py`
+7. Backend 실행 후 `learning_unit/09_real_tool_loop.py`
+8. Provider 비교는 `learning_unit/10_labs/01_multi_provider_tool_calling.py`
 
 ```text
 함수 → Schema → Tool Call → Allowlist → Pydantic 검증

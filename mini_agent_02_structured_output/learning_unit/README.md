@@ -22,3 +22,9 @@ JSON/dict → Pydantic Validation → LLM Structured Output
 
 `02`~`06`과 `10_labs\01_structured_provider_comparison.py`는 Mini Agent 02
 Backend를 먼저 실행해야 합니다. Prompt 차이는 실제 Provider로 관찰합니다.
+
+```powershell
+$env:PROMPT_EXAMPLE_PROVIDER="gemini"  # mock, gemini, openai, ollama
+```
+
+`mock`은 System Prompt를 해석하지 않으므로 호출 흐름 확인에만 사용합니다.

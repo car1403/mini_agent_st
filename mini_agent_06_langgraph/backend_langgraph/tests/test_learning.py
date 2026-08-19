@@ -44,3 +44,29 @@ def test_python_and_langgraph_return_same_answer() -> None:
     result = client.post("/api/learning/graph/compare", json={"message": "제주 여행을 준비해줘"}).json()
     assert result["python"]["status"] == result["langgraph"]["status"]
     assert result["python"]["answer"] == result["langgraph"]["answer"]
+
+
+def test_stream_returns_node_updates_in_order() -> None:
+    result = client.post("/api/learning/graph/stream", json={"message": "부산 날씨"}).json()
+    nodes = [item["node"] for item in result["events"]]
+    assert nodes == ["load_context", "decide_action", "run_tool", "generate_answer"]
+
+
+def test_llm_node_uses_mock_provider() -> None:
+    result = client.post(
+        "/api/learning/graph/llm-node",
+        json={"message": "안녕하세요", "provider": "mock"},
+    ).json()
+    assert result["provider"] == "mock"
+    assert result["trace"][0]["node"] == "llm_node"
+
+
+def test_advanced_graph_routes_to_allowlisted_tool() -> None:
+    result = client.post(
+        "/api/learning/graph/advanced",
+        json={"user_id": "demo-user", "message": "부산 날씨", "provider": "mock"},
+    ).json()
+    assert result["route"] == "tool"
+    assert result["tool_call"]["tool_name"] == "get_weather"
+    assert result["tool_result"]["source"] == "mock"
+    assert result["status"] == "completed"

@@ -21,6 +21,8 @@ multiple_page = st.Page("app_pages/09_multiple_scenarios.py", title="여러 시�
 trace_page = st.Page("app_pages/10_trace_failure.py", title="Trace 실패 찾기")
 regression_page = st.Page("app_pages/11_regression.py", title="회귀 테스트")
 provider_page = st.Page("app_pages/12_provider_comparison.py", title="Provider 비교 (선택)")
+llm_evaluation_page = st.Page("app_pages/13_real_llm_evaluation.py", title="실제 LLM 평가")
+storage_page = st.Page("app_pages/14_evaluation_storage.py", title="평가 이력 저장")
 
 pages = [
     home_page,
@@ -35,6 +37,8 @@ pages = [
     trace_page,
     regression_page,
     provider_page,
+    llm_evaluation_page,
+    storage_page,
 ]
 
 navigation = st.navigation(pages, position="hidden")
@@ -80,6 +84,8 @@ with st.sidebar:
         st.page_link(trace_page, label="8-4. Trace 실패 찾기")
         st.page_link(regression_page, label="8-5. 회귀 테스트")
         st.page_link(provider_page, label="8-6. Provider 비교 (선택)")
+        st.page_link(llm_evaluation_page, label="8-7. 실제 LLM 평가")
+        st.page_link(storage_page, label="8-8~9. 평가 이력과 Trace")
 
     st.divider()
     st.caption("실행 환경과 완성본")

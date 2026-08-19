@@ -40,3 +40,12 @@ Memory를 저장하고 Backend를 재시작한 뒤에도 남는지 확인합니�
 ## 실습 8. 개인화 답변 변화
 
 Memory 저장 전·저장 후·수정 후·삭제 후에 같은 질문을 보내 최종 답변이 어떻게 달라지는지 기록합니다.
+
+## 실습 9. 실제 저장소 확장
+
+- `07_redis_ttl_and_isolation.py`: 사용자 격리와 TTL 연장
+- `08_redis_atomic_update.py`: version 충돌과 HTTP 409
+- `10_postgres_conversation_history.py`: 최근 대화 복원
+- `11_hybrid_session_restore.py`: Redis·PostgreSQL 복원 Trace
+- `12_real_llm_personalization.py`: 관련 Memory 기반 실제 LLM 답변
+- `13_memory_export_and_delete.py`: 사용자 내보내기와 전체 삭제

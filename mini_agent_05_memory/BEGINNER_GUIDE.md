@@ -19,6 +19,8 @@
 3. Redis Session 저장과 TTL 조회
 4. Memory CRUD 저장소를 `postgres`로 변경
 5. Backend 재시작 후 Memory가 유지되는지 확인
+6. `Hybrid Memory 복원`에서 저장소별 Trace 확인
+7. `learning_unit/07~13`으로 TTL·충돌·대화·개인화·삭제 실습
 
 ## 꼭 구분할 것
 
@@ -28,3 +30,5 @@
 | Agent 단기 상태 | Redis | TTL 자동 만료 |
 | 사용자 장기 선호 | PostgreSQL | CRUD와 사용자 격리 |
 | RAG 지식 문서 | pgvector | 검색 가능한 외부 지식 |
+
+Redis Key는 사용자와 Session을 함께 구분하고, PostgreSQL 조회·삭제는 항상 인증된 사용자 ID 범위에서 실행해야 합니다.

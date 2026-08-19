@@ -21,11 +21,26 @@ def test_tool_registry_contains_read_only_tools() -> None:
     assert "delete" not in names
 
 
+def test_tool_description_variants_keep_same_contract() -> None:
+    clear = client.get("/api/tools?variant=clear").json()["tools"]
+    vague = client.get("/api/tools?variant=vague").json()["tools"]
+    assert [item["name"] for item in clear] == [item["name"] for item in vague]
+    assert clear[0]["description"] != vague[0]["description"]
+
+
 def test_mock_selects_hotel_without_running_it() -> None:
     response = client.post("/api/tools/select", json={"provider": "mock", "message": "부산 숙소를 찾아줘."})
     assert response.status_code == 200
     assert response.json()["tool_name"] == "search_hotels"
     assert response.json()["arguments"]["city"] == "부산"
+    assert response.json()["needs_clarification"] is True
+    assert set(response.json()["missing_arguments"]) == {"check_in", "check_out", "guests"}
+
+
+def test_tool_choice_none_prevents_selection() -> None:
+    response = client.post("/api/tools/select", json={"provider": "mock", "tool_choice": "none", "message": "오늘 부산 날씨"})
+    assert response.status_code == 200
+    assert response.json()["tool_name"] is None
 
 
 def test_allowed_tool_runs_after_validation() -> None:
@@ -77,13 +92,26 @@ def test_tool_compare_keeps_provider_error() -> None:
 def test_mock_agent_loop_uses_tool_result() -> None:
     response = client.post(
         "/api/tools/complete",
-        json={"provider": "mock", "message": "부산 날씨를 알려줘"},
+        json={"provider": "mock", "message": "오늘 부산 날씨를 알려줘"},
     )
     assert response.status_code == 200
     body = response.json()
     assert body["decision"]["tool_name"] == "get_weather"
     assert body["tool_result"]["success"] is True
     assert "get_weather" in body["final_answer"]
+    assert [item["stage"] for item in body["trace"]] == ["tool_selection", "tool_result", "final_answer"]
+
+
+def test_agent_loop_asks_before_inventing_missing_arguments() -> None:
+    response = client.post(
+        "/api/tools/complete",
+        json={"provider": "mock", "message": "숙소를 찾아줘"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["decision"]["needs_clarification"] is True
+    assert body["tool_result"] is None
+    assert "city" in body["final_answer"]
 
 
 def test_agent_loop_does_not_run_unneeded_tool() -> None:

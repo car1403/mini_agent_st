@@ -102,12 +102,13 @@ def search_rag(query: str, mode: str, top_k: int):
     return request("POST", "/api/rag/search", json=payload)
 
 
-def answer_with_rag(query: str, mode: str, top_k: int, provider: str):
+def answer_with_rag(query: str, mode: str, top_k: int, provider: str, use_cache: bool = True):
     payload = {
         "query": query,
         "mode": mode,
         "top_k": top_k,
         "provider": provider,
+        "use_cache": use_cache,
     }
     return request("POST", "/api/rag/answer", json=payload)
 

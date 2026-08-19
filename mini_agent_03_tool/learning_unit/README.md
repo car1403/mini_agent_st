@@ -7,6 +7,7 @@ Tool Use는 LLM이 필요한 함수를 제안하고, Backend가 그 제안을 �
 ```text
 사용자 질문
 → LLM의 Tool Call 제안
+→ 필수 arguments 누락 확인과 추가 질문
 → Backend Allowlist 확인
 → Pydantic arguments 검증
 → Tool 실행
@@ -20,6 +21,9 @@ LLM의 Tool Call은 실행 명령이 아니라 제안입니다. 실행 권한은
 
 - Python 함수, Tool Schema, Tool Call, Tool Result를 구분합니다.
 - Tool 선택과 실제 실행을 분리합니다.
+- Tool 설명 품질과 `auto`·`none`·`required` Choice를 비교합니다.
+- Provider 원본 Tool Call과 정규화 결과를 확인합니다.
+- 누락값을 추측하지 않고 추가 질문합니다.
 - Tool 입력을 Pydantic으로 검증합니다.
 - Allowlist에 등록된 조회 Tool만 실행합니다.
 - Tool Result를 최종 답변으로 변환합니다.
@@ -29,14 +33,18 @@ LLM의 Tool Call은 실행 명령이 아니라 제안입니다. 실행 권한은
 
 | 순서 | 예제 | 외부 환경 | 확인할 내용 |
 | --- | --- | --- | --- |
-| 01 | `01_concept_example.py` | 필요 없음 | 함수·Schema·Call·Result |
-| 02 | `02_tool_schema_validation.py` | 필요 없음 | 누락·날짜·추가 인자 검증 |
-| 03 | `03_mock_tool_selection.py` | 필요 없음 | 선택과 실행의 분리 |
-| 04 | `04_safe_tool_execution.py` | 필요 없음 | Allowlist와 오류 코드 |
-| 05 | `05_tool_result_to_answer.py` | 필요 없음 | 전체 Agent Loop |
-| 06 | `06_multi_provider_tool_calling.py` | Backend 필요 | Provider 비교와 실제 API |
+| 00 | `00_tool_use_concepts.py` | 필요 없음 | 함수·Schema·Call·Result |
+| 01 | `01_tool_schema_validation.py` | 필요 없음 | arguments 계약 검증 |
+| 02 | `02_mock_tool_selection.py` | 필요 없음 | 선택과 실행 분리 |
+| 03 | `03_tool_description_before_after.py` | Backend 필요 | Tool 설명 품질 비교 |
+| 04 | `04_tool_choice_modes.py` | Backend 필요 | auto·none·required |
+| 05 | `05_real_tool_call_inspection.py` | Backend 필요 | 원본 Tool Call 관찰 |
+| 06 | `06_missing_arguments_and_clarification.py` | Backend 필요 | 누락 정보 재질문 |
+| 07 | `07_safe_tool_execution.py` | 필요 없음 | Allowlist와 검증 |
+| 08 | `08_tool_result_to_answer.py` | 필요 없음 | Tool Result 기반 답변 |
+| 09 | `09_real_tool_loop.py` | Backend 필요 | 전체 Loop Trace |
 
-처음 다섯 예제는 API Key와 Docker 없이 실행합니다. 마지막 예제만 실행 중인 `mini_agent_03_tool` Backend를 사용합니다.
+00~02, 07~08은 API Key와 Docker 없이 실행합니다. 03~06, 09는 실행 중인 Backend를 사용합니다.
 
 ## 네 가지 용어
 
@@ -51,21 +59,26 @@ Tool Result  Backend가 검증 후 실행한 결과
 
 ```powershell
 cd C:\mini_agent_st\mini_agent_03_tool\learning_unit
-python .\01_concept_example.py
-python .\02_tool_schema_validation.py
-python .\03_mock_tool_selection.py
-python .\04_safe_tool_execution.py
-python .\05_tool_result_to_answer.py
+python .\00_tool_use_concepts.py
+python .\01_tool_schema_validation.py
+python .\02_mock_tool_selection.py
+python .\07_safe_tool_execution.py
+python .\08_tool_result_to_answer.py
 ```
 
-06은 Mini Agent Backend를 먼저 실행합니다.
+실제 호출 예제는 Mini Agent Backend를 먼저 실행합니다.
 
 ```powershell
 cd C:\mini_agent_st\mini_agent_03_tool\backend
 uvicorn app.main:app --reload --port 8000
 
 cd C:\mini_agent_st\mini_agent_03_tool\learning_unit
-python .\06_multi_provider_tool_calling.py
+$env:TOOL_EXAMPLE_PROVIDER="gemini"  # mock, gemini, openai, ollama
+python .\03_tool_description_before_after.py
+python .\04_tool_choice_modes.py
+python .\05_real_tool_call_inspection.py
+python .\06_missing_arguments_and_clarification.py
+python .\09_real_tool_loop.py
 ```
 
 기본 확인 순서는 `Mock → Gemini → GPT → Ollama/Llama`입니다. Cloud Provider와 Docker Ollama는 선택 환경이 준비된 경우에만 비교합니다. Provider 하나가 실패해도 비교 결과의 다른 항목은 유지됩니다.

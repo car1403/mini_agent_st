@@ -11,9 +11,10 @@
 ```text
 State → Node → Edge → 조건 분기 → 작은 Graph
       → Reducer → 반복과 종료 → Checkpoint → Python과 비교
+      → Streaming → LLM·Tool·RAG·Memory 통합
 ```
 
-`learning_unit`과 `steps`는 같은 9개 파일을 사용합니다. 01~04는 일반 Python, 05~09는 실제 LangGraph 예제입니다.
+`learning_unit`의 01~04는 일반 Python, 05~09는 LangGraph 기본, 10~15는 실제 LLM·Tool·RAG·Memory 통합 예제입니다.
 
 ## Streamlit 초보자 메뉴
 
@@ -22,8 +23,9 @@ State → Node → Edge → 조건 분기 → 작은 Graph
 3. 반복과 종료
 4. Checkpoint와 `thread_id`
 5. 일반 Python과 LangGraph 비교
+6. Streaming과 실제 Agent Graph
 
-기존 LLM·Tool·RAG·Memory·완성 Agent 화면은 선택 시연으로 분리했습니다.
+LLM·Tool·RAG·Memory Node와 전체 Trace는 `실제 Agent Graph` 화면에서 비교합니다.
 
 ## 실행
 
@@ -58,9 +60,8 @@ Python Backend 8000은 마지막 완성본 비교에서만 선택적으로 실�
 
 ## 이번 단계에서 하지 않는 것
 
-- 실제 LLM 응답을 Graph 분기 기준으로 사용
 - 실제 예약이나 결제 Tool 실행
 - `interrupt()` 승인과 재개
 - 병렬 Node와 Subgraph
 
-완성 Backend에는 다음 단계 미리보기 코드가 있지만 초보자 학습 메뉴에서는 실행하지 않습니다.
+조회 Tool과 실제 LLM 생성은 Advanced Graph에서 실행합니다. 승인과 상태 변경 Tool은 다음 단계 미리보기로만 유지합니다.

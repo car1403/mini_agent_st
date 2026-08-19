@@ -8,6 +8,10 @@
 2. 질문별 상위 2개 검색 결과와 점수
 3. 최종 답변과 출처
 4. 근거가 없는 질문에 대한 제한 답변
+5. 같은 질문의 Redis Cache MISS·HIT와 TTL
+6. 재색인 후 Cache 무효화 결과
+5. 같은 질문의 Redis Cache MISS·HIT와 TTL
+6. 재색인 후 Cache 무효화 결과
 
 ## 선택 과제
 
@@ -18,4 +22,8 @@
 - 답변에 사용한 출처가 표시됩니다.
 - 검색 결과가 없을 때 내용을 지어내지 않습니다.
 - 문서 저장과 질문 검색에 같은 Embedding 모델을 사용합니다.
+- 재색인해도 같은 Chunk가 중복 저장되지 않습니다.
+- Cache Key가 collection·질문·검색 조건·Provider를 구분합니다.
+- 재색인해도 같은 Chunk가 중복 저장되지 않습니다.
+- Cache Key가 collection·질문·검색 조건·Provider를 구분합니다.
 - API Key나 DB 비밀번호를 코드에 직접 작성하지 않습니다.

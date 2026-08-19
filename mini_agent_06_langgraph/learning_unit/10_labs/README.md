@@ -62,3 +62,12 @@
 - 반복 Graph의 `max_iterations` 검사를 제거합니다.
 
 마지막 오류는 실행하지 말고 코드만 보고 무한 반복 가능성을 설명합니다.
+
+## 실습 12. 실제 Agent Graph
+
+- `10_graph_streaming.py`: Node별 부분 State Update
+- `11_llm_node_and_state.py`: 실제 Provider·Model·Trace
+- `12_tool_node_and_routing.py`: Tool Conditional Edge와 Allowlist 실행
+- `13_rag_memory_context_graph.py`: Context Node의 RAG·Memory 결과
+- `14_retry_fallback_and_error.py`: Provider 오류와 명시적 Fallback
+- `15_full_agent_graph.py`: Node별 지연 시간과 전체 Trace

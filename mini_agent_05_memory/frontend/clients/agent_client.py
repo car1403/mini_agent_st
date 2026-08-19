@@ -170,20 +170,43 @@ def personalize_with_memory(user_id: str, question: str, storage: str, provider:
     return request("POST", "/api/memory/personalize", json=payload)
 
 
-def save_session(session_id: str, state: dict[str, Any]):
+def save_session(session_id: str, state: dict[str, Any], user_id: str = "demo-user"):
     return request(
         "POST",
         "/api/memory/sessions",
-        json={"session_id": session_id, "state": state},
+        json={"user_id": user_id, "session_id": session_id, "state": state},
     )
 
 
-def get_session(session_id: str):
-    return request("GET", f"/api/memory/sessions/{quote(session_id, safe='')}")
+def get_session(session_id: str, user_id: str = "demo-user", refresh_ttl: bool = False):
+    path = f"/api/memory/sessions/{quote(session_id, safe='')}?user_id={quote(user_id, safe='')}&refresh_ttl={str(refresh_ttl).lower()}"
+    return request("GET", path)
 
 
-def delete_session(session_id: str):
-    return request("DELETE", f"/api/memory/sessions/{quote(session_id, safe='')}")
+def delete_session(session_id: str, user_id: str = "demo-user"):
+    path = f"/api/memory/sessions/{quote(session_id, safe='')}?user_id={quote(user_id, safe='')}"
+    return request("DELETE", path)
+
+
+def patch_session(user_id: str, session_id: str, changes: dict[str, Any], expected_version: int):
+    return request("PATCH", "/api/memory/sessions", json={
+        "user_id": user_id, "session_id": session_id,
+        "changes": changes, "expected_version": expected_version,
+    })
+
+
+def append_conversation(user_id: str, session_id: str, role: str, content: str):
+    return request("POST", "/api/memory/conversations", json={
+        "user_id": user_id, "session_id": session_id, "role": role, "content": content,
+    })
+
+
+def restore_memory(user_id: str, session_id: str):
+    return request("GET", f"/api/memory/restore/{quote(user_id, safe='')}/{quote(session_id, safe='')}")
+
+
+def export_memory(user_id: str):
+    return request("GET", f"/api/memory/export/{quote(user_id, safe='')}")
 
 
 def get_memory_status():

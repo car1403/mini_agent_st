@@ -18,6 +18,7 @@ Prompt 네 부분
 - 생성형 `TravelPlan`과 분류형 `SupportTicket` Pydantic Schema
 - Prompt 구성 화면의 여행·고객 지원·회의 예제
 - Template, Zero/Few-shot, 구분자, 메시지 역할, Before/After 실제 호출 예제
+- Prompt 구성 화면의 Output Format과 Before/After 실제 응답 비교
 - Schema별 JSON 검증과 입력 예제
 - Schema를 선택하는 Mock·Gemini·GPT·Ollama/Llama Structured Output
 - Provider별 성공, 지연 시간, 실패 비교

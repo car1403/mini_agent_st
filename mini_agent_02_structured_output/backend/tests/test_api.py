@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.providers import _gemini_response_schema
 from app.schemas import TravelImageAnalysis
 
 
@@ -38,6 +39,18 @@ def test_prompt_preview_keeps_four_sections() -> None:
     assert all(title in response.json()["prompt"] for title in (
         "[Role]", "[Instruction]", "[Context]", "[Constraint]"
     ))
+
+
+def test_prompt_preview_adds_optional_output_format() -> None:
+    response = client.post("/api/prompts/preview", json={
+        "role": "회의 기록자",
+        "instruction": "결정 사항 정리",
+        "context": "프로젝트 회의",
+        "constraint": "추측 금지",
+        "output_format": "결정 사항과 할 일 목록",
+    })
+    assert response.status_code == 200
+    assert "[Output Format]" in response.json()["prompt"]
 
 
 def test_travel_plan_validation_success() -> None:
@@ -110,6 +123,22 @@ def test_mock_support_ticket_matches_contract() -> None:
     assert response.status_code == 200
     assert response.json()["schema_type"] == "support_ticket"
     assert response.json()["content"]["category"] == "billing"
+
+
+def test_gemini_schema_removes_unsupported_additional_properties() -> None:
+    def all_keys(value):
+        if isinstance(value, dict):
+            for key, item in value.items():
+                yield key
+                yield from all_keys(item)
+        elif isinstance(value, list):
+            for item in value:
+                yield from all_keys(item)
+
+    for schema_type in ("travel_plan", "support_ticket"):
+        schema = _gemini_response_schema(schema_type)
+        assert "additionalProperties" not in set(all_keys(schema))
+        assert set(schema["required"])
 
 
 def test_legacy_travel_plan_route_remains_compatible() -> None:

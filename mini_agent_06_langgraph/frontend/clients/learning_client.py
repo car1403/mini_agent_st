@@ -21,3 +21,16 @@ def run_checkpoint(thread_id: str):
 
 def compare_workflows(message: str):
     return request("POST", "/api/learning/graph/compare", {"message": message}, LANGGRAPH_AGENT_API_URL)
+
+
+def stream_graph(message: str):
+    return request("POST", "/api/learning/graph/stream", {"message": message}, LANGGRAPH_AGENT_API_URL)
+
+
+def run_llm_node(message: str, provider: str):
+    return request("POST", "/api/learning/graph/llm-node", {"message": message, "provider": provider}, LANGGRAPH_AGENT_API_URL)
+
+
+def run_advanced_graph(user_id: str, message: str, provider: str):
+    payload = {"user_id": user_id, "message": message, "provider": provider}
+    return request("POST", "/api/learning/graph/advanced", payload, LANGGRAPH_AGENT_API_URL)

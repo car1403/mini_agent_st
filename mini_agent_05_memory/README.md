@@ -1,6 +1,6 @@
 # Mini Agent 05 · Memory
 
-Mini Agent 04의 RAG 화면을 유지하면서 대화 Window, Redis 단기 상태, PostgreSQL 장기 사용자 Memory를 추가한 누적형 완성본입니다.
+Mini Agent 04의 RAG 화면을 유지하면서 대화 Window, Redis 단기 상태, PostgreSQL 장기 사용자 Memory와 Hybrid 복원을 추가한 누적형 완성본입니다.
 
 ```text
 질문
@@ -18,8 +18,9 @@ Mini Agent 04의 RAG 화면을 유지하면서 대화 Window, Redis 단기 상�
 3. 사용자 Memory CRUD
 4. Memory 기반 개인화 답변
 5. Redis·PostgreSQL
+6. Hybrid Memory 복원·Trace
 
-처음 네 메뉴는 `mock` 저장소와 `mock` Provider로 Docker 없이 실행할 수 있습니다. 마지막 메뉴에서만 Redis와 PostgreSQL을 연결합니다.
+처음 네 메뉴는 `mock` 저장소와 `mock` Provider로 Docker 없이 실행할 수 있습니다. 저장소 및 Hybrid 복원 메뉴에서는 Redis와 PostgreSQL을 연결합니다.
 
 ## 실행 1: Mock Memory
 
@@ -68,3 +69,4 @@ docker compose up -d
 - `learning_unit`: 6개 단위 예제를 순서대로 실행합니다.
 - `backend`, `frontend`: 시간이 부족할 때 바로 시연합니다.
 - `solution`: 정답 코드 위치를 안내합니다.
+Redis Session은 사용자별 Key·TTL·version으로 관리하며 PostgreSQL은 장기 선호와 대화 이력을 보관합니다. `Hybrid Memory 복원` 화면에서 두 저장소 결과와 Trace를 함께 확인할 수 있습니다.

@@ -32,13 +32,14 @@ tool_validation = st.Page("app_pages/15_tool_validation.py", title="Tool 입력 
 tool_errors = st.Page("app_pages/16_tool_errors.py", title="Tool 오류 처리")
 rag_limit = st.Page("app_pages/19_rag_limit.py", title="검색 결과 제한")
 memory_isolation = st.Page("app_pages/24_memory_isolation.py", title="사용자별 대화 분리")
+memory_restore = st.Page("app_pages/25_memory_restore.py", title="Hybrid Memory 복원")
 
 pages = [
     home, concept, travel, environment, llm, providers, prompt, validation,
     structured, image_analysis, tts, tool_schema, tool_select, tool_validation,
     tool_run, tool_errors, tool_loop, rag_concept, rag_chunks, rag_search,
     rag_limit, rag_answer, rag_pgvector, memory_types, conversation,
-    memory_isolation, memory_crud, memory_answer, memory_storage,
+    memory_isolation, memory_crud, memory_answer, memory_storage, memory_restore,
 ]
 navigation = st.navigation(pages, position="hidden")
 
@@ -88,6 +89,7 @@ with st.sidebar:
         st.page_link(memory_crud, label="5-4. Memory CRUD")
         st.page_link(memory_answer, label="5-5. 개인화 답변")
         st.page_link(memory_storage, label="5-6. Redis·PostgreSQL")
+        st.page_link(memory_restore, label="5-7. Hybrid 복원·Trace")
 
     st.divider()
     st.caption("실행 환경")

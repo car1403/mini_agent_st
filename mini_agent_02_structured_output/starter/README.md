@@ -2,7 +2,7 @@
 
 다음 순서로 TODO를 완성합니다.
 
-1. `prompt_builder.py`: Prompt 네 부분 조립
+1. `prompt_builder.py`: Prompt 네 부분과 선택적 Output Format 조립
 2. `travel_plan_schema.py`: 필드 범위 완성
 3. `support_ticket_schema.py`: 분류형 SupportTicket Schema 완성
 4. `validation_errors.py`: 두 Schema의 오류 위치와 메시지 출력

@@ -17,6 +17,7 @@
 → 09 SupportTicket JSON 정상·오류 검증
 → Starter TODO
 → Prompt 구성 메뉴
+→ Prompt Before / After 비교
 → Pydantic 검증 메뉴
 → Mock Structured Output
 → 실제 Provider 비교
@@ -37,12 +38,14 @@ app_pages → clients/agent_client.py → core/api_client.py
 Backend main.py → routers/agent_router.py → services/schemas
 ```
 
-화면과 API 연결 방식은 새로 배우지 않습니다. 이번 단계에서 새로 배우는 코드는
-Prompt 조립, `TravelPlan`·`SupportTicket` 검증, Provider Structured Output뿐입니다.
+화면과 API 연결 방식은 새로 배우지 않습니다. 이번 단계에서는 Prompt Template,
+Zero/Few-shot, 메시지 역할, Before/After 실험과 `TravelPlan`·`SupportTicket`
+Structured Output에 집중합니다.
 
 ## 완료 체크
 
 - [ ] Prompt의 네 구성 요소를 설명할 수 있다.
+- [ ] Zero-shot과 Few-shot, Before와 After 결과를 비교할 수 있다.
 - [ ] JSON 오류와 Pydantic 오류를 구분할 수 있다.
 - [ ] `extra="forbid"`가 필요한 이유를 설명할 수 있다.
 - [ ] Mock 결과를 선택한 Pydantic Schema로 검증할 수 있다.

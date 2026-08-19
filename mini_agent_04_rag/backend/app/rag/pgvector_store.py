@@ -1,4 +1,4 @@
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid5
 
 import psycopg
 from pgvector.psycopg import register_vector
@@ -23,6 +23,8 @@ def reset_collection() -> None:
 
 
 def add_chunk(chunk: RagChunk, vector: list[float]) -> None:
+    # collection과 chunk_id로 결정적 UUID를 만들어 재색인해도 중복 행이 생기지 않습니다.
+    document_id = uuid5(NAMESPACE_URL, f"{settings.rag_collection}:{chunk.chunk_id}")
     with connect() as connection, connection.cursor() as cursor:
         cursor.execute(
             """
@@ -31,9 +33,20 @@ def add_chunk(chunk: RagChunk, vector: list[float]) -> None:
                  embedding_provider, embedding_model, embedding_dimension,
                  embedding, metadata)
             VALUES (%s, %s, %s, %s, %s, %s, 'ollama', %s, %s, %s, %s)
+            ON CONFLICT (id) DO UPDATE SET
+                title = EXCLUDED.title,
+                content = EXCLUDED.content,
+                source = EXCLUDED.source,
+                chunk_index = EXCLUDED.chunk_index,
+                embedding_provider = EXCLUDED.embedding_provider,
+                embedding_model = EXCLUDED.embedding_model,
+                embedding_dimension = EXCLUDED.embedding_dimension,
+                embedding = EXCLUDED.embedding,
+                metadata = EXCLUDED.metadata,
+                created_at = NOW()
             """,
             (
-                uuid4(), settings.rag_collection, chunk.title, chunk.text,
+                document_id, settings.rag_collection, chunk.title, chunk.text,
                 chunk.source, chunk.chunk_index, settings.ollama_embedding_model,
                 len(vector), vector, Jsonb({"chunk_id": chunk.chunk_id}),
             ),

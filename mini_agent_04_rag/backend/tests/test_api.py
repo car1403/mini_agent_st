@@ -51,11 +51,37 @@ def test_mock_answer_includes_source() -> None:
             "mode": "keyword",
             "top_k": 2,
             "provider": "mock",
+            "use_cache": False,
         },
     )
     assert response.status_code == 200
     assert response.json()["grounded"] is True
     assert "baggage.md" in response.json()["sources"]
+    assert [item["stage"] for item in response.json()["trace"]] == [
+        "cache", "retrieval", "context", "generation",
+    ]
+
+
+def test_rag_answer_uses_redis_cache_when_available(monkeypatch) -> None:
+    from app.rag import redis_cache
+
+    cached = {
+        "answer": "Cache 답변",
+        "grounded": True,
+        "provider": "mock",
+        "search_mode": "keyword",
+        "sources": ["baggage.md"],
+    }
+    monkeypatch.setattr(redis_cache, "get", lambda key: (cached, 120))
+
+    response = client.post(
+        "/api/rag/answer",
+        json={"query": "수하물", "mode": "keyword", "provider": "mock", "use_cache": True},
+    )
+    assert response.status_code == 200
+    assert response.json()["cache_hit"] is True
+    assert response.json()["cache_ttl_seconds"] == 120
+    assert response.json()["trace"][0]["stage"] == "cache"
 
 
 def test_unknown_question_is_not_answered() -> None:
@@ -66,6 +92,7 @@ def test_unknown_question_is_not_answered() -> None:
             "mode": "keyword",
             "top_k": 2,
             "provider": "mock",
+            "use_cache": False,
         },
     )
     assert response.status_code == 200

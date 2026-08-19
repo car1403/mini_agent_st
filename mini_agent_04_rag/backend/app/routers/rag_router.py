@@ -5,6 +5,7 @@ from app.config import settings
 from app.rag.chunking import split_document
 from app.rag.documents import TRAVEL_DOCUMENTS
 from app.rag.pgvector_store import connect
+from app.rag import redis_cache
 from app.rag.service import answer, index_documents, search
 from app.schemas import (
     ChunkPreviewRequest, RagAnswerRequest, RagAnswerResult, RagIndexRequest,
@@ -43,7 +44,7 @@ def retrieve(payload: RagSearchRequest) -> RagSearchResult:
 @rag_router.post("/answer", response_model=RagAnswerResult)
 def create_grounded_answer(payload: RagAnswerRequest) -> RagAnswerResult:
     try:
-        return answer(payload.query, payload.mode, payload.top_k, payload.provider)
+        return answer(payload.query, payload.mode, payload.top_k, payload.provider, payload.use_cache)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:
@@ -63,6 +64,7 @@ def status() -> dict:
     result = {
         "ollama": {"ok": False, "url": settings.ollama_base_url},
         "postgres": {"ok": False},
+        "redis": {"ok": False, "url": settings.redis_url},
         "embedding_model": settings.ollama_embedding_model,
         "collection": settings.rag_collection,
     }
@@ -78,4 +80,9 @@ def status() -> dict:
             result["postgres"] = {"ok": True, "document_count": cursor.fetchone()[0]}
     except Exception as error:
         result["postgres"]["error"] = str(error)
+    try:
+        result["redis"]["ok"] = redis_cache.ping()
+        result["redis"]["cache_ttl_seconds"] = settings.rag_cache_ttl_seconds
+    except Exception as error:
+        result["redis"]["error"] = str(error)
     return result

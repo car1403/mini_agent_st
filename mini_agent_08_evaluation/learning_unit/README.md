@@ -21,6 +21,9 @@ Agent가 **실행되는 것**과 **올바르게 행동하는 것**은 다릅니�
 | 8-4 | `04_trace_failure.py` | Trace에서 실패 위치 찾기 |
 | 8-5 | `05_regression.py` | 수정 전후 회귀 확인 |
 | 8-6 | `06_provider_comparison_optional.py` | Provider 비교 선택 확장 |
+| 8-7 | `07_real_llm_evaluation.py` | 실제 LLM 구조화 응답 평가 |
+| 8-8 | `08_postgres_evaluation_history.py` | PostgreSQL 평가 이력 저장 |
+| 8-9 | `09_redis_trace_cache.py` | Redis 실패 Trace 캐시 |
 
 ## 실행
 
@@ -36,7 +39,12 @@ python .\05_regression.py
 
 ```powershell
 python .\06_provider_comparison_optional.py
+python .\07_real_llm_evaluation.py --provider openai
+python .\08_postgres_evaluation_history.py
+python .\09_redis_trace_cache.py
 ```
+
+8-7은 실제 Provider 환경 설정이 필요합니다. 8-8은 `DATABASE_URL`, 8-9는 `REDIS_URL`을 사용하며 Mini Agent Backend가 먼저 실행되어야 합니다.
 
 ## 처음 평가할 항목
 

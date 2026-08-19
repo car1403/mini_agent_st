@@ -50,3 +50,10 @@ def delete(user_id: str, memory_id: str) -> bool:
             (user_id, memory_id),
         )
         return cursor.rowcount == 1
+
+
+def delete_all_for_user(user_id: str) -> int:
+    # 사용자 범위를 SQL 조건으로 강제해 다른 사용자의 Memory는 건드리지 않습니다.
+    with connect() as connection, connection.cursor() as cursor:
+        cursor.execute("DELETE FROM user_memories WHERE user_id = %s", (user_id,))
+        return cursor.rowcount

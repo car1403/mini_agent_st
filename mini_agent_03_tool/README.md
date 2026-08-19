@@ -7,6 +7,7 @@ Streamlit app_pages
   → clients/agent_client.py
   → FastAPI routers/agent_router.py
   → providers.py에서 Tool 선택
+  → 필수 arguments 누락 시 사용자에게 추가 질문
   → tools/travel_tools.py에서 검증·실행
   → Tool Result로 최종 답변
 ```
@@ -14,6 +15,10 @@ Streamlit app_pages
 ## 새로 배우는 내용
 
 - Python 함수·Tool Schema·Tool Call·Tool Result
+- 명확한 설명과 모호한 설명의 선택 결과 비교
+- `auto`·`none`·`required` Tool Choice
+- Provider 원본 Tool Call과 정규화 결과
+- 누락값을 추측하지 않는 추가 질문
 - Pydantic arguments 검증
 - Tool 선택과 실행 분리
 - Allowlist 기반 안전 실행
@@ -23,9 +28,9 @@ Streamlit app_pages
 
 ## 추가 메뉴
 
-1. `Tool 선택`: 등록된 Schema와 LLM의 Tool Call 제안을 확인합니다.
+1. `Tool 선택`: 설명·Choice를 바꾸며 LLM의 원본 Tool Call과 정규화 결과를 확인합니다.
 2. `Tool 실행`: arguments를 수정하고 Backend 검증 결과를 확인합니다.
-3. `Agent Loop`: 선택 → 실행 → Tool Result → 최종 답변을 한 화면에서 추적합니다.
+3. `Agent Loop`: 선택 → 재질문 또는 실행 → Tool Result → 최종 답변을 Trace로 확인합니다.
 
 실행되는 Tool은 날씨·숙소·관광지 조회용 Mock 함수뿐입니다. 실제 예약, 결제, 환불, 삭제는 실행하지 않습니다.
 

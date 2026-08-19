@@ -8,6 +8,7 @@ Streamlit app_pages
   → FastAPI routers
   → rag/service.py
   → keyword 또는 Ollama + pgvector
+  → Redis TTL 답변 Cache
 ```
 
 ## 새로 추가된 메뉴
@@ -16,9 +17,9 @@ Streamlit app_pages
 2. 문서와 Chunk
 3. 문서 검색
 4. 근거 기반 답변
-5. Ollama + pgvector
+5. Ollama + pgvector + Redis
 
-`keyword + mock`은 Docker와 API Key 없이 실행됩니다. 여기서 RAG의 전체 흐름을 확인한 다음 `pgvector + Ollama`로 검색 구현을 교체합니다.
+`keyword + mock`은 Docker와 API Key 없이 실행됩니다. 실제 구성에서는 pgvector가 Chunk와 Embedding을 영구 저장하고 Redis가 동일 조건의 답변을 TTL 동안 Cache합니다.
 
 ## 실행 1: Mock RAG
 
@@ -51,6 +52,8 @@ docker exec mini-agent-ollama ollama pull embeddinggemma
 ```
 
 Streamlit의 `pgvector 실습` 메뉴에서 연결 상태를 확인하고 `교육용 문서 색인`을 누릅니다.
+
+`근거 기반 답변`에서 Redis Cache를 켜고 같은 질문을 두 번 실행하면 MISS→HIT와 남은 TTL, 전체 Trace를 확인할 수 있습니다. 문서를 재색인하면 Mini Agent RAG 전용 Cache가 무효화됩니다.
 
 > 기존 PostgreSQL Volume에는 새 `documents` 테이블이 자동 생성되지 않을 수 있습니다. 이 경우 [공용 인프라 안내](../infra/README.md)의 기존 Volume 주의를 확인합니다.
 

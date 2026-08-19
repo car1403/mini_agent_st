@@ -77,6 +77,7 @@ class PromptPreviewRequest(BaseModel):
     instruction: str = Field(min_length=1, max_length=1000)
     context: str = Field(min_length=1, max_length=1000)
     constraint: str = Field(min_length=1, max_length=1000)
+    output_format: str = Field(default="", max_length=1000)
 
 
 class PromptPreviewResult(PromptPreviewRequest):

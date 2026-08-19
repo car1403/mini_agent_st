@@ -25,3 +25,12 @@ Docker 환경을 실행한 후 `06_pgvector_ollama_example.py`의 질문을 세 
 - 박물관이 쉬는 날은 언제인가요?
 
 각 질문에서 1위 문서와 점수를 기록합니다.
+
+## 실습 5. 키워드와 pgvector 비교
+
+`07_keyword_vs_pgvector.py`에서 두 검색 방식의 1위 문서와 점수를 비교합니다.
+
+## 실습 6. 실제 LLM과 Redis Cache
+
+`08_real_rag_answer.py`에서 답변이 Context에 근거하는지 확인하고,
+`09_redis_rag_cache.py`에서 MISS→HIT·TTL·재색인 무효화를 확인합니다.

@@ -27,8 +27,24 @@ def compare_providers(providers: list[str], message: str):
     return request("POST", "/api/providers/compare", json={"providers": providers, "message": message})
 
 
-def preview_prompt(role: str, instruction: str, context: str, constraint: str):
-    return request("POST", "/api/prompts/preview", json={"role": role, "instruction": instruction, "context": context, "constraint": constraint})
+def preview_prompt(
+    role: str,
+    instruction: str,
+    context: str,
+    constraint: str,
+    output_format: str = "",
+):
+    return request(
+        "POST",
+        "/api/prompts/preview",
+        json={
+            "role": role,
+            "instruction": instruction,
+            "context": context,
+            "constraint": constraint,
+            "output_format": output_format,
+        },
+    )
 
 
 def validate_structured_output(schema_type: str, payload: dict[str, Any]):

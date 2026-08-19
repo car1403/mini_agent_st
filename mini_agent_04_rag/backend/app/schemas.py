@@ -259,6 +259,7 @@ class RagSearchResult(BaseModel):
 
 class RagAnswerRequest(RagSearchRequest):
     provider: ProviderName = "mock"
+    use_cache: bool = True
 
 
 class RagAnswerResult(BaseModel):
@@ -269,6 +270,9 @@ class RagAnswerResult(BaseModel):
     context: str = ""
     sources: list[str] = Field(default_factory=list)
     results: list[RagSearchItem] = Field(default_factory=list)
+    cache_hit: bool = False
+    cache_ttl_seconds: int = 0
+    trace: list[dict[str, Any]] = Field(default_factory=list)
 
 
 class RagIndexRequest(BaseModel):

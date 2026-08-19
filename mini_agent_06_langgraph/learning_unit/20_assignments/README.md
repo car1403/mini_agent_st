@@ -21,4 +21,6 @@
 - 같은 입력의 일반 Python Workflow와 결과를 비교합니다.
 - 완성한 Graph의 Mermaid 텍스트를 출력하고 실행 흐름을 설명합니다.
 
-이번 과제에는 실제 LLM, Tool, RAG, 승인 `interrupt()`를 넣지 않습니다.
+기본 과제에는 실제 LLM·Tool·RAG를 넣지 않아도 됩니다. 선택 확장에서는 LLM 생성
+Node, 조회 Tool Node, Context Node 중 하나를 추가하고 실행 Trace를 제출합니다.
+승인 `interrupt()`와 상태 변경 Tool은 이번 과제에 넣지 않습니다.

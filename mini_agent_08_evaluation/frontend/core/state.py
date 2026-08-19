@@ -9,6 +9,7 @@ def init_state() -> None:
     st.session_state.setdefault("agent_run_backend", None)
     st.session_state.setdefault("evaluation_baseline", None)
     st.session_state.setdefault("provider_results", [])
+    st.session_state.setdefault("latest_evaluation", None)
 
 
 def selected_backend() -> tuple[str, str]:

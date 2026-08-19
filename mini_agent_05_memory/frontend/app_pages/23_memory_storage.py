@@ -17,25 +17,26 @@ if st.button("저장소 연결 상태 확인"):
 
 st.subheader("Redis Session 실습")
 session_id = st.text_input("session_id", "travel-demo")
+user_id = st.text_input("user_id", "demo-user")
 state = {"current_step": "collect_information", "destination": "부산"}
 
 left, middle, right = st.columns(3)
 with left:
     if st.button("상태 저장"):
         try:
-            st.json(save_session(session_id, state))
+            st.json(save_session(session_id, state, user_id))
         except BackendAPIError as error:
             st.error(str(error))
 with middle:
     if st.button("상태와 TTL 조회"):
         try:
-            st.json(get_session(session_id))
+            st.json(get_session(session_id, user_id))
         except BackendAPIError as error:
             st.error(str(error))
 with right:
     if st.button("상태 삭제"):
         try:
-            st.json(delete_session(session_id))
+            st.json(delete_session(session_id, user_id))
         except BackendAPIError as error:
             st.error(str(error))
 

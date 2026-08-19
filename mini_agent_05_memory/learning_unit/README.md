@@ -24,6 +24,10 @@ Memory는 사용자와 대화의 상태이고, RAG는 외부 지식 문서를 �
 - 민감정보와 허용되지 않은 항목을 저장하지 않습니다.
 - Redis TTL과 PostgreSQL 영구 저장을 비교합니다.
 - 사용자가 Memory를 확인·수정·삭제할 수 있게 합니다.
+- Redis 원자 갱신과 PostgreSQL 대화 복원을 확인합니다.
+- 실제 LLM이 사용한 Memory와 Trace를 관찰합니다.
+- Redis 원자 갱신과 PostgreSQL 대화 복원을 확인합니다.
+- 실제 LLM이 사용한 Memory와 Trace를 관찰합니다.
 
 ## 예제 순서
 
@@ -35,6 +39,20 @@ Memory는 사용자와 대화의 상태이고, RAG는 외부 지식 문서를 �
 | 04 | `04_relevant_and_safe_memory.py` | 필요 없음 | 관련 Memory·민감정보·개인화 |
 | 05 | `05_redis_session.py` | Redis 필요 | TTL 단기 상태 |
 | 06 | `06_postgres_long_term_memory.py` | PostgreSQL 필요 | 영구 Memory CRUD |
+| 07 | `07_redis_ttl_and_isolation.py` | Backend·Redis 필요 | TTL과 사용자 격리 |
+| 08 | `08_redis_atomic_update.py` | Backend·Redis 필요 | 원자 갱신과 충돌 |
+| 09 | `09_postgres_upsert_and_isolation.py` | Backend·PostgreSQL 필요 | upsert와 격리 |
+| 10 | `10_postgres_conversation_history.py` | Backend·PostgreSQL 필요 | 대화 이력 복원 |
+| 11 | `11_hybrid_session_restore.py` | Backend·전체 필요 | Hybrid 복원 |
+| 12 | `12_real_llm_personalization.py` | Backend·LLM 필요 | 개인화 Trace |
+| 13 | `13_memory_export_and_delete.py` | Backend·PostgreSQL 필요 | 내보내기·삭제 |
+| 07 | `07_redis_ttl_and_isolation.py` | Backend·Redis 필요 | TTL과 사용자 격리 |
+| 08 | `08_redis_atomic_update.py` | Backend·Redis 필요 | 원자 갱신과 충돌 |
+| 09 | `09_postgres_upsert_and_isolation.py` | Backend·PostgreSQL 필요 | upsert와 격리 |
+| 10 | `10_postgres_conversation_history.py` | Backend·PostgreSQL 필요 | 대화 이력 복원 |
+| 11 | `11_hybrid_session_restore.py` | Backend·전체 필요 | Hybrid 복원 |
+| 12 | `12_real_llm_personalization.py` | Backend·LLM 필요 | 개인화 Trace |
+| 13 | `13_memory_export_and_delete.py` | Backend·PostgreSQL 필요 | 내보내기·삭제 |
 
 처음 네 예제는 Docker 없이 실행합니다. Redis와 PostgreSQL은 개념과 안전 규칙을 이해한 후 연결합니다.
 
@@ -58,6 +76,40 @@ docker compose up -d
 cd C:\mini_agent_st\mini_agent_05_memory\learning_unit
 python .\05_redis_session.py
 python .\06_postgres_long_term_memory.py
+```
+
+07~13은 Mini Agent Backend를 실행한 뒤 호출합니다.
+
+```powershell
+cd C:\mini_agent_st\mini_agent_05_memory\backend
+uvicorn app.main:app --reload --port 8000
+
+cd C:\mini_agent_st\mini_agent_05_memory\learning_unit
+$env:MEMORY_EXAMPLE_PROVIDER="ollama"
+python .\07_redis_ttl_and_isolation.py
+python .\08_redis_atomic_update.py
+python .\09_postgres_upsert_and_isolation.py
+python .\10_postgres_conversation_history.py
+python .\11_hybrid_session_restore.py
+python .\12_real_llm_personalization.py
+python .\13_memory_export_and_delete.py
+```
+
+07~13은 Mini Agent Backend를 실행한 뒤 호출합니다.
+
+```powershell
+cd C:\mini_agent_st\mini_agent_05_memory\backend
+uvicorn app.main:app --reload --port 8000
+
+cd C:\mini_agent_st\mini_agent_05_memory\learning_unit
+$env:MEMORY_EXAMPLE_PROVIDER="ollama"
+python .\07_redis_ttl_and_isolation.py
+python .\08_redis_atomic_update.py
+python .\09_postgres_upsert_and_isolation.py
+python .\10_postgres_conversation_history.py
+python .\11_hybrid_session_restore.py
+python .\12_real_llm_personalization.py
+python .\13_memory_export_and_delete.py
 ```
 
 > 기존 PostgreSQL Volume에는 새 Memory 테이블이 자동 생성되지 않을 수 있습니다. [공용 인프라 안내](../../../mini_agent_st/infra/README.md)의 스키마 적용 방법을 확인합니다.

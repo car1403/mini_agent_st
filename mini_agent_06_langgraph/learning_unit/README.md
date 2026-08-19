@@ -15,6 +15,8 @@
 → Reducer
 → 반복과 종료
 → Checkpoint와 thread_id
+→ Streaming과 실제 LLM Node
+→ Tool·RAG·Memory 통합 Graph
 ```
 
 ## 다섯 가지 핵심 용어
@@ -42,6 +44,12 @@ Node는 State 전체를 새로 만들거나 직접 변경하기보다 변경할 
 | 07 | `07_loop_and_stop.py` | 예 | 반복·최대 횟수·실패 종료 |
 | 08 | `08_checkpoint_and_thread.py` | 예 | Checkpoint·`thread_id` |
 | 09 | `09_python_vs_langgraph.py` | 예 | 같은 분기 흐름 비교 |
+| 10 | `10_graph_streaming.py` | 예·Backend | Node State Update |
+| 11 | `11_llm_node_and_state.py` | 예·Backend | 실제 LLM Node |
+| 12 | `12_tool_node_and_routing.py` | 예·Backend | Tool 분기·안전 실행 |
+| 13 | `13_rag_memory_context_graph.py` | 예·Backend | RAG·Memory Context |
+| 14 | `14_retry_fallback_and_error.py` | 예·Backend | 오류·Fallback 정책 |
+| 15 | `15_full_agent_graph.py` | 예·Backend | 전체 Trace |
 
 처음 네 예제는 LangGraph를 사용하지 않습니다. 같은 개념을 일반 Python으로 이해한 다음 05에서 실제 Graph로 옮깁니다.
 
@@ -58,6 +66,22 @@ python .\06_reducer.py
 python .\07_loop_and_stop.py
 python .\08_checkpoint_and_thread.py
 python .\09_python_vs_langgraph.py
+```
+
+10~15는 학습용 LangGraph Backend를 실행한 뒤 호출합니다.
+
+```powershell
+cd C:\mini_agent_st\mini_agent_06_langgraph\backend_langgraph
+uvicorn app.main:app --reload --port 8001
+
+cd C:\mini_agent_st\mini_agent_06_langgraph\learning_unit
+$env:GRAPH_EXAMPLE_PROVIDER="ollama"
+python .\10_graph_streaming.py
+python .\11_llm_node_and_state.py
+python .\12_tool_node_and_routing.py
+python .\13_rag_memory_context_graph.py
+python .\14_retry_fallback_and_error.py
+python .\15_full_agent_graph.py
 ```
 
 `05_small_travel_graph.py`는 실행할 때 Graph의 Mermaid 텍스트도 출력합니다. Node와 Edge 코드를 읽은 뒤 출력된 구조를 함께 비교합니다.
@@ -101,9 +125,11 @@ Checkpointer는 각 단계의 State를 Thread별로 저장합니다. 같은 `thr
 
 ## 이번 단계에서 제외하는 내용
 
-- 실제 LLM·Tool·RAG·Memory를 한 Graph에 통합
 - `interrupt()` 승인과 재개
 - 병렬 Node, Subgraph, 운영용 Checkpointer
+
+10~15에서는 실제 LLM 생성과 조회 Tool·RAG·Memory 통합을 다룹니다. 승인과 상태 변경
+Tool은 다음 과정에 남겨 둡니다.
 
 승인·중단·재개는 다음 `07_human-approval-and-safety`에서 학습합니다. Mini06의 완성 Backend는 마지막 선택 시연용입니다.
 

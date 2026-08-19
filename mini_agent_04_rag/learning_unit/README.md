@@ -16,6 +16,7 @@ RAG는 LLM에게 바로 질문하지 않고, 먼저 관련 문서를 찾은 다�
 - 검색 결과로 Context를 만들고 출처를 표시합니다.
 - 근거가 없을 때 답변을 제한합니다.
 - Ollama Embedding과 PostgreSQL/pgvector의 역할을 구분합니다.
+- Redis TTL Cache의 MISS·HIT와 재색인 무효화를 확인합니다.
 
 ## 예제 순서
 
@@ -27,6 +28,10 @@ RAG는 LLM에게 바로 질문하지 않고, 먼저 관련 문서를 찾은 다�
 | 04 | `04_vector_similarity.py` | 필요 없음 | 코사인 유사도와 의미 검색 |
 | 05 | `05_grounded_answer.py` | 필요 없음 | Context·출처·답변 제한 |
 | 06 | `06_pgvector_ollama_example.py` | Docker 필요 | 실제 Embedding 저장과 검색 |
+| 07 | `07_keyword_vs_pgvector.py` | Backend·Docker 필요 | 검색 방식 비교 |
+| 08 | `08_real_rag_answer.py` | Backend·Docker 필요 | 실제 LLM 근거 답변 |
+| 09 | `09_redis_rag_cache.py` | Backend·Docker 필요 | Redis MISS·HIT·TTL |
+| 10 | `10_full_rag_pipeline.py` | Backend·Docker 필요 | 전체 Pipeline Trace |
 
 처음 다섯 예제는 API Key와 Docker 없이 실행합니다. RAG의 흐름을 먼저 이해한 후 마지막 예제에서 같은 과정을 실제 인프라로 교체합니다.
 
@@ -64,6 +69,20 @@ cd C:\mini_agent_st\mini_agent_04_rag\learning_unit
 python .\06_pgvector_ollama_example.py
 ```
 
+07~10은 Mini Agent Backend를 실행한 뒤 호출합니다.
+
+```powershell
+cd C:\mini_agent_st\mini_agent_04_rag\backend
+uvicorn app.main:app --reload --port 8000
+
+cd C:\mini_agent_st\mini_agent_04_rag\learning_unit
+$env:RAG_EXAMPLE_PROVIDER="ollama"
+python .\07_keyword_vs_pgvector.py
+python .\08_real_rag_answer.py
+python .\09_redis_rag_cache.py
+python .\10_full_rag_pipeline.py
+```
+
 > 기존 PostgreSQL Volume이 이미 만들어진 경우 수정된 `init.sql`은 자동 재실행되지 않습니다. 데이터 보존이 필요하면 Volume을 삭제하지 말고 `documents` 생성 SQL만 직접 실행합니다.
 
 ## 수업 진행 권장 순서
@@ -71,8 +90,9 @@ python .\06_pgvector_ollama_example.py
 1. 01~03에서 RAG 흐름과 검색을 이해합니다.
 2. 04에서 벡터는 의미를 나타내는 숫자 배열이라는 정도만 확인합니다.
 3. 05에서 검색 결과가 없을 때 모른다고 답하도록 만듭니다.
-4. 06에서 Docker의 Ollama와 pgvector로 구현을 교체합니다.
-5. `mini_agent_04_rag` 화면에서 Chunk·검색·답변·출처를 확인합니다.
+4. 06~07에서 Ollama와 pgvector 색인·검색을 확인합니다.
+5. 08에서 실제 LLM의 근거 답변과 출처를 확인합니다.
+6. 09~10에서 Redis Cache와 전체 Trace를 확인합니다.
 
 ## 공식 참고 자료
 

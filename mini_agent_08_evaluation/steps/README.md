@@ -14,6 +14,9 @@ Backend와 Provider 설정을 마친 경우에만 선택 확장을 실행합니�
 
 ```powershell
 python .\06_provider_comparison_optional.py
+python .\07_real_llm_evaluation.py --provider openai
+python .\08_postgres_evaluation_history.py
+python .\09_redis_trace_cache.py
 ```
 
 그다음 `frontend`에서 같은 평가가 실제 API 결과로 표시되는지 확인합니다.
