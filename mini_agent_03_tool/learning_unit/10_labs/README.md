@@ -115,7 +115,7 @@ python 10_labs/06_inventory_reservation_concurrency.py
 
 ## Provider 비교 방법
 
-별도의 Provider 비교 Python 파일은 두지 않습니다. Mini Agent의 Streamlit `Tool 선택`과 `Agent Loop` 화면에서 같은 질문을 Gemini, GPT, Ollama/Llama에 각각 보내 다음 항목을 표로 기록합니다.
+별도의 Provider 비교 Python 파일은 두지 않습니다. Mini Agent의 Streamlit `Tool 선택`과 `Agent Cycle` 화면에서 같은 질문을 Gemini, GPT, Ollama/Llama에 각각 보내 다음 항목을 표로 기록합니다.
 
 - 선택한 Tool 이름과 arguments
 - 누락 정보에 대한 재질문 여부

@@ -22,6 +22,14 @@ def reset_collection() -> None:
         )
 
 
+def delete_source(source: str) -> None:
+    with connect() as connection, connection.cursor() as cursor:
+        cursor.execute(
+            "DELETE FROM documents WHERE collection_name = %s AND source = %s",
+            (settings.rag_collection, source),
+        )
+
+
 def add_chunk(chunk: RagChunk, vector: list[float]) -> None:
     # collection과 chunk_id로 결정적 UUID를 만들어 재색인해도 중복 행이 생기지 않습니다.
     document_id = uuid5(NAMESPACE_URL, f"{settings.rag_collection}:{chunk.chunk_id}")
@@ -48,35 +56,67 @@ def add_chunk(chunk: RagChunk, vector: list[float]) -> None:
             (
                 document_id, settings.rag_collection, chunk.title, chunk.text,
                 chunk.source, chunk.chunk_index, settings.ollama_embedding_model,
-                len(vector), vector, Jsonb({"chunk_id": chunk.chunk_id}),
+                len(vector), vector, Jsonb({"chunk_id": chunk.chunk_id, **chunk.metadata}),
             ),
         )
 
 
-def vector_search(vector: list[float], top_k: int = 3) -> list[RagSearchItem]:
+def vector_search(
+    vector: list[float],
+    top_k: int = 3,
+    score_threshold: float | None = None,
+    metadata_filter: dict | None = None,
+) -> list[RagSearchItem]:
+    minimum = settings.rag_min_score if score_threshold is None else score_threshold
+    metadata_filter = metadata_filter or {}
     with connect() as connection, connection.cursor() as cursor:
         cursor.execute(
             """
-            SELECT title, content, source, chunk_index,
+            SELECT title, content, source, chunk_index, metadata,
                    1 - (embedding <=> %s) AS score
             FROM documents
             WHERE collection_name = %s
               AND embedding_provider = 'ollama'
               AND embedding_model = %s
               AND embedding_dimension = %s
+              AND 1 - (embedding <=> %s) >= %s
+              AND (%s::jsonb = '{}'::jsonb OR metadata @> %s::jsonb)
             ORDER BY embedding <=> %s
             LIMIT %s
             """,
             (
                 vector, settings.rag_collection, settings.ollama_embedding_model,
-                len(vector), vector, top_k,
+                len(vector), vector, minimum, Jsonb(metadata_filter),
+                Jsonb(metadata_filter), vector, top_k,
             ),
         )
         results = [
             RagSearchItem(
                 title=row[0], content=row[1], source=row[2],
-                chunk_index=row[3], score=round(float(row[4]), 3),
+                chunk_index=row[3], metadata=row[4], score=round(float(row[5]), 3),
             )
             for row in cursor.fetchall()
         ]
-        return [item for item in results if item.score >= settings.rag_min_score]
+        return results
+
+
+def indexed_documents(metadata_filter: dict | None = None) -> list[RagSearchItem]:
+    metadata_filter = metadata_filter or {}
+    with connect() as connection, connection.cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT title, content, source, chunk_index, metadata
+            FROM documents
+            WHERE collection_name = %s
+              AND (%s::jsonb = '{}'::jsonb OR metadata @> %s::jsonb)
+            ORDER BY source, chunk_index
+            """,
+            (settings.rag_collection, Jsonb(metadata_filter), Jsonb(metadata_filter)),
+        )
+        return [
+            RagSearchItem(
+                title=row[0], content=row[1], source=row[2], chunk_index=row[3],
+                metadata=row[4], score=0,
+            )
+            for row in cursor.fetchall()
+        ]

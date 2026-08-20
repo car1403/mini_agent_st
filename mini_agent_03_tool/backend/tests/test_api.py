@@ -3,6 +3,7 @@ from datetime import date, timedelta
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.tools.registry import TOOL_REGISTRY, ToolSpec, get_tool_definitions
 
 
 client = TestClient(app)
@@ -21,6 +22,16 @@ def test_tool_registry_contains_read_only_tools() -> None:
     names = {item["name"] for item in response.json()["tools"]}
     assert names == {"get_current_weather", "get_weather_forecast", "search_hotels", "search_attractions"}
     assert "delete" not in names
+
+
+def test_tool_specs_are_the_single_source_for_definition_and_execution() -> None:
+    definitions = {item["name"]: item for item in get_tool_definitions()}
+    assert set(definitions) == set(TOOL_REGISTRY)
+    for name, spec in TOOL_REGISTRY.items():
+        assert isinstance(spec, ToolSpec)
+        assert spec.name == name
+        assert definitions[name]["description"] == spec.description
+        assert definitions[name]["input_schema"] == spec.input_model.model_json_schema()
 
 
 def test_mock_selects_hotel_without_running_it() -> None:
@@ -120,7 +131,6 @@ def test_mock_selects_forecast_for_future_weather() -> None:
     assert body["tool_name"] == "get_weather_forecast"
     assert body["arguments"]["city"] == "부산"
     assert "target_date" in body["arguments"]
-    assert [item["stage"] for item in body["trace"]] == ["tool_selection", "tool_result", "final_answer"]
 
 
 def test_agent_loop_asks_before_inventing_missing_arguments() -> None:

@@ -1,19 +1,84 @@
 from time import perf_counter
+import re
+from typing import Any
 
 from app.config import settings
 from app.providers import generate
 from app.rag.documents import TRAVEL_DOCUMENTS
 from app.rag.embedding import embed
 from app.rag.keyword_store import all_chunks, keyword_search
-from app.rag.pgvector_store import add_chunk, reset_collection, vector_search
+from app.rag.pgvector_store import (
+    add_chunk, delete_source, indexed_documents, reset_collection, vector_search,
+)
 from app.rag import redis_cache
-from app.schemas import RagAnswerResult, RagIndexResult, RagSearchItem
+from app.schemas import RagAnswerResult, RagChunk, RagIndexResult, RagSearchItem
 
 
-def search(query: str, mode: str, top_k: int) -> list[RagSearchItem]:
+def _indexed_keyword_search(
+    query: str, top_k: int, metadata_filter: dict[str, Any],
+) -> list[RagSearchItem]:
+    query_tokens = set(re.findall(r"[가-힣A-Za-z0-9-]+", query.lower()))
+    results = []
+    for item in indexed_documents(metadata_filter):
+        tokens = set(re.findall(r"[가-힣A-Za-z0-9-]+", f"{item.title} {item.content}".lower()))
+        common = query_tokens & tokens
+        if common:
+            item.score = round(len(common) / max(len(query_tokens), 1), 3)
+            results.append(item)
+    return sorted(results, key=lambda item: item.score, reverse=True)[:top_k]
+
+
+def _hybrid_search(
+    query: str, top_k: int, score_threshold: float | None,
+    metadata_filter: dict[str, Any],
+) -> list[RagSearchItem]:
+    candidates = min(max(top_k * 3, 10), 30)
+    keyword = _indexed_keyword_search(query, candidates, metadata_filter)
+    vector = vector_search(embed(query), candidates, score_threshold, metadata_filter)
+    fused: dict[tuple[str, int], dict[str, Any]] = {}
+    for mode, results in (("keyword", keyword), ("pgvector", vector)):
+        for rank, item in enumerate(results, start=1):
+            key = (item.source, item.chunk_index)
+            entry = fused.setdefault(key, {
+                "item": item, "score": 0.0, "matched_by": [],
+                "keyword_rank": None, "vector_rank": None,
+            })
+            entry["score"] += 1 / (60 + rank)
+            entry["matched_by"].append(mode)
+            if mode == "keyword":
+                entry["keyword_rank"] = rank
+            else:
+                entry["vector_rank"] = rank
+    ordered = sorted(fused.values(), key=lambda entry: entry["score"], reverse=True)[:top_k]
+    output = []
+    for entry in ordered:
+        item = entry["item"]
+        item.score = round(entry["score"], 6)
+        item.matched_by = entry["matched_by"]
+        item.keyword_rank = entry["keyword_rank"]
+        item.vector_rank = entry["vector_rank"]
+        output.append(item)
+    return output
+
+
+def search(
+    query: str,
+    mode: str,
+    top_k: int,
+    score_threshold: float | None = None,
+    metadata_filter: dict[str, Any] | None = None,
+) -> list[RagSearchItem]:
+    metadata_filter = metadata_filter or {}
     if mode == "keyword":
+        if metadata_filter:
+            return _indexed_keyword_search(query, top_k, metadata_filter)
+        # 기본 keyword 경로는 Docker 없는 첫 실습을 위해 메모리 문서를 사용합니다.
         return keyword_search(query, top_k)
-    return vector_search(embed(query), top_k)
+    if mode == "pgvector":
+        return vector_search(embed(query), top_k, score_threshold, metadata_filter)
+    if mode == "hybrid":
+        return _hybrid_search(query, top_k, score_threshold, metadata_filter)
+    raise ValueError(f"지원하지 않는 검색 방식입니다: {mode}")
 
 
 def index_documents(reset: bool = True) -> RagIndexResult:
@@ -35,8 +100,33 @@ def index_documents(reset: bool = True) -> RagIndexResult:
     )
 
 
-def answer(query: str, mode: str, top_k: int, provider: str, use_cache: bool = True) -> RagAnswerResult:
-    cache_key = redis_cache.make_key(query, mode, top_k, provider)
+def index_chunks(chunks: list[RagChunk], *, source: str, replace_source: bool = True) -> RagIndexResult:
+    if not chunks:
+        raise ValueError("색인할 Chunk가 없습니다.")
+    if replace_source:
+        delete_source(source)
+    for chunk in chunks:
+        add_chunk(chunk, embed(chunk.text))
+    try:
+        redis_cache.invalidate_all()
+    except Exception:
+        pass
+    return RagIndexResult(
+        collection=settings.rag_collection,
+        indexed_count=len(chunks),
+        embedding_model=settings.ollama_embedding_model,
+    )
+
+
+def answer(
+    query: str, mode: str, top_k: int, provider: str, use_cache: bool = True,
+    score_threshold: float | None = None,
+    metadata_filter: dict[str, Any] | None = None,
+) -> RagAnswerResult:
+    metadata_filter = metadata_filter or {}
+    cache_key = redis_cache.make_key(
+        query, mode, top_k, provider, score_threshold, metadata_filter,
+    )
     if use_cache:
         try:
             cached, ttl = redis_cache.get(cache_key)
@@ -50,11 +140,11 @@ def answer(query: str, mode: str, top_k: int, provider: str, use_cache: bool = T
             pass
 
     started = perf_counter()
-    results = search(query, mode, top_k)
+    results = search(query, mode, top_k, score_threshold, metadata_filter)
     retrieval_ms = round((perf_counter() - started) * 1000)
     trace = [
         {"stage": "cache", "data": {"hit": False, "enabled": use_cache}},
-        {"stage": "retrieval", "data": {"mode": mode, "count": len(results), "latency_ms": retrieval_ms}},
+        {"stage": "retrieval", "data": {"mode": mode, "count": len(results), "latency_ms": retrieval_ms, "score_threshold": score_threshold, "metadata_filter": metadata_filter}},
     ]
     if not results:
         return RagAnswerResult(

@@ -1,15 +1,18 @@
 import httpx
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
 from app.config import settings
 from app.rag.chunking import split_document
 from app.rag.documents import TRAVEL_DOCUMENTS
 from app.rag.pgvector_store import connect
+from app.rag.pdf_ingestion import pdf_to_chunks
 from app.rag import redis_cache
-from app.rag.service import answer, index_documents, search
+from app.rag.service import answer, index_chunks, index_documents, search
+from app.providers import generate
 from app.schemas import (
     ChunkPreviewRequest, RagAnswerRequest, RagAnswerResult, RagIndexRequest,
-    RagIndexResult, RagSearchRequest, RagSearchResult,
+    RagAgentRequest, RagAgentResult, RagIndexResult, RagSearchRequest,
+    RagSearchResult, RagTextIndexRequest,
 )
 
 
@@ -35,7 +38,10 @@ def preview_chunks(payload: ChunkPreviewRequest) -> dict:
 @rag_router.post("/search", response_model=RagSearchResult)
 def retrieve(payload: RagSearchRequest) -> RagSearchResult:
     try:
-        results = search(payload.query, payload.mode, payload.top_k)
+        results = search(
+            payload.query, payload.mode, payload.top_k,
+            payload.score_threshold, payload.metadata_filter,
+        )
         return RagSearchResult(query=payload.query, mode=payload.mode, results=results)
     except Exception as error:
         raise HTTPException(status_code=503, detail=f"{payload.mode} 검색 실패: {error}") from error
@@ -44,7 +50,10 @@ def retrieve(payload: RagSearchRequest) -> RagSearchResult:
 @rag_router.post("/answer", response_model=RagAnswerResult)
 def create_grounded_answer(payload: RagAnswerRequest) -> RagAnswerResult:
     try:
-        return answer(payload.query, payload.mode, payload.top_k, payload.provider, payload.use_cache)
+        return answer(
+            payload.query, payload.mode, payload.top_k, payload.provider,
+            payload.use_cache, payload.score_threshold, payload.metadata_filter,
+        )
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:
@@ -57,6 +66,85 @@ def create_index(payload: RagIndexRequest) -> RagIndexResult:
         return index_documents(payload.reset_collection)
     except Exception as error:
         raise HTTPException(status_code=503, detail=f"문서 색인 실패: {error}") from error
+
+
+@rag_router.post("/texts", response_model=RagIndexResult)
+def create_text_index(payload: RagTextIndexRequest) -> RagIndexResult:
+    try:
+        chunks = split_document(
+            payload.content, source=payload.source, title=payload.title,
+            sentences_per_chunk=payload.sentences_per_chunk,
+        )
+        chunks = [
+            chunk.model_copy(update={"metadata": {"input_type": "text", **payload.metadata}})
+            for chunk in chunks
+        ]
+        return index_chunks(chunks, source=payload.source, replace_source=payload.replace_source)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except Exception as error:
+        raise HTTPException(status_code=503, detail=f"텍스트 색인 실패: {error}") from error
+
+
+@rag_router.post("/pdf", response_model=RagIndexResult)
+async def create_pdf_index(
+    pdf: UploadFile = File(...),
+    title: str = Form("PDF 문서"),
+    replace_source: bool = Form(True),
+) -> RagIndexResult:
+    filename = pdf.filename or "document.pdf"
+    if not filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=422, detail=".pdf 파일만 업로드할 수 있습니다.")
+    content = await pdf.read()
+    maximum = settings.max_pdf_size_mb * 1024 * 1024
+    if not content or len(content) > maximum:
+        raise HTTPException(status_code=422, detail=f"PDF는 1 byte 이상 {settings.max_pdf_size_mb}MB 이하여야 합니다.")
+    try:
+        chunks = pdf_to_chunks(content, source=filename, title=title)
+        return index_chunks(chunks, source=filename, replace_source=replace_source)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except Exception as error:
+        raise HTTPException(status_code=503, detail=f"PDF 색인 실패: {error}") from error
+
+
+@rag_router.post("/agent", response_model=RagAgentResult)
+def rag_agent(payload: RagAgentRequest) -> RagAgentResult:
+    tool_call = {
+        "name": "search_knowledge_base",
+        "arguments": {
+            "query": payload.query,
+            "mode": payload.mode,
+            "top_k": payload.top_k,
+            "score_threshold": payload.score_threshold,
+            "metadata_filter": payload.metadata_filter,
+        },
+    }
+    try:
+        results = search(
+            payload.query, payload.mode, payload.top_k,
+            payload.score_threshold, payload.metadata_filter,
+        )
+        sources = sorted({item.source for item in results})
+        if not results:
+            final_answer = "등록된 지식 문서에서 근거를 찾지 못했습니다."
+        elif payload.provider == "mock":
+            final_answer = f"{results[0].content} (출처: {results[0].source})"
+        else:
+            context = "\n".join(f"[{item.source}] {item.content}" for item in results)
+            final_answer = str(generate(
+                payload.provider,
+                "Tool Result만 근거로 한국어로 답하고 출처를 표시하세요.",
+                f"질문: {payload.query}\n\nTool Result:\n{context}",
+            ).content)
+        return RagAgentResult(
+            question=payload.query, provider=payload.provider, tool_call=tool_call,
+            tool_result=results, final_answer=final_answer, sources=sources,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+    except Exception as error:
+        raise HTTPException(status_code=503, detail=f"RAG Agent 실행 실패: {error}") from error
 
 
 @rag_router.get("/status")

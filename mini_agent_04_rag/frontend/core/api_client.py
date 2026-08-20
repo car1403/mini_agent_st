@@ -40,7 +40,7 @@ def upload(path: str, files: dict[str, Any], data: dict[str, Any]) -> Any:
     try:
         return _check(httpx.post(f"{BACKEND_URL}{path}", files=files, data=data, timeout=REQUEST_TIMEOUT)).json()
     except httpx.RequestError as error:
-        raise BackendAPIError("이미지 업로드 중 Backend에 연결할 수 없습니다.") from error
+        raise BackendAPIError("파일 업로드 중 Backend에 연결할 수 없습니다.") from error
 
 
 def request_bytes(path: str, json: dict[str, Any]) -> bytes:

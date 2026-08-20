@@ -32,6 +32,7 @@ class Settings:
     rag_cache_ttl_seconds: int = int(os.getenv("RAG_CACHE_TTL_SECONDS", "300"))
     request_timeout_seconds: float = float(os.getenv("REQUEST_TIMEOUT_SECONDS", "60"))
     max_image_size_mb: int = int(os.getenv("MAX_IMAGE_SIZE_MB", "10"))
+    max_pdf_size_mb: int = int(os.getenv("MAX_PDF_SIZE_MB", "20"))
 
 
 settings = Settings()

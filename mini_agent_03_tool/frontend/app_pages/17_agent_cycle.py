@@ -21,7 +21,7 @@ message = st.selectbox(
 
 st.code("질문 → Tool Call → Backend 검증 → Tool Result → 최종 답변", language="text")
 
-if st.button("Agent Loop 실행", type="primary"):
+if st.button("Agent Cycle 실행", type="primary"):
     try:
         result = complete_tool_loop(provider, message, tool_choice)
         st.subheader("1. Tool Call 제안")
@@ -35,7 +35,7 @@ if st.button("Agent Loop 실행", type="primary"):
             st.json(result["tool_result"])
         st.subheader("3. 사용자용 최종 답변")
         st.success(result["final_answer"])
-        with st.expander("전체 Loop Trace", expanded=True):
+        with st.expander("전체 Cycle Trace", expanded=True):
             st.json(result["trace"])
     except BackendAPIError as error:
         st.error(str(error))

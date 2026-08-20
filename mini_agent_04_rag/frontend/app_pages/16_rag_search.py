@@ -17,10 +17,10 @@ questions = {
 question_type = st.selectbox("질문 유형", list(questions))
 query = questions[question_type]
 st.code(query, language="text")
-mode = st.radio("검색 방식", ["keyword", "pgvector"], horizontal=True)
+mode = st.radio("검색 방식", ["keyword", "pgvector", "hybrid"], horizontal=True)
 top_k = st.slider("top_k", 1, 5, 3)
 
-if mode == "pgvector":
+if mode in ("pgvector", "hybrid"):
     st.warning("pgvector 검색 전에는 마지막 메뉴에서 문서 색인을 먼저 실행하세요.")
 
 if st.button("관련 문서 찾기", type="primary"):

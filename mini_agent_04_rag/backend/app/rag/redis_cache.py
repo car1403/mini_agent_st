@@ -16,11 +16,19 @@ def client() -> Redis:
     return Redis.from_url(settings.redis_url, decode_responses=True)
 
 
-def make_key(query: str, mode: str, top_k: int, provider: str) -> str:
+def make_key(
+    query: str,
+    mode: str,
+    top_k: int,
+    provider: str,
+    score_threshold: float | None = None,
+    metadata_filter: dict[str, Any] | None = None,
+) -> str:
     # 검색 조건이나 모델이 달라지면 같은 질문도 별도 Cache 항목으로 취급합니다.
     payload = (
         f"{settings.rag_collection}|{settings.ollama_embedding_model}|"
-        f"{settings.rag_min_score}|{query.strip()}|{mode}|{top_k}|{provider}"
+        f"{settings.rag_min_score}|{query.strip()}|{mode}|{top_k}|{provider}|"
+        f"{score_threshold}|{json.dumps(metadata_filter or {}, ensure_ascii=False, sort_keys=True)}"
     )
     return KEY_PREFIX + hashlib.sha256(payload.encode("utf-8")).hexdigest()
 

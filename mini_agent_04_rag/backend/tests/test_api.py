@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.schemas import RagSearchRequest
 
 
 client = TestClient(app)
@@ -98,3 +99,30 @@ def test_unknown_question_is_not_answered() -> None:
     assert response.status_code == 200
     assert response.json()["grounded"] is False
     assert response.json()["sources"] == []
+
+
+def test_advanced_search_contract() -> None:
+    request = RagSearchRequest.model_validate({
+        "query": "반려동물 비용", "mode": "hybrid", "top_k": 5,
+        "score_threshold": 0.4,
+        "metadata_filter": {"category": "hotel", "status": "active"},
+    })
+    assert request.mode == "hybrid"
+    assert request.metadata_filter["status"] == "active"
+
+
+def test_pdf_endpoint_rejects_non_pdf() -> None:
+    response = client.post(
+        "/api/rag/pdf",
+        files={"pdf": ("policy.txt", b"not a pdf", "text/plain")},
+        data={"title": "잘못된 파일"},
+    )
+    assert response.status_code == 422
+
+
+def test_text_index_validates_empty_content() -> None:
+    response = client.post(
+        "/api/rag/texts",
+        json={"title": "빈 문서", "content": "", "source": "empty.md"},
+    )
+    assert response.status_code == 422
