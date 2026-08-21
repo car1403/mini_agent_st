@@ -1,6 +1,6 @@
 """Allowlist Tool을 찾아 입력 검증과 오류 표준화를 거쳐 안전하게 실행합니다.
 
-`agents.tool_loop`와 `/api/tools/run` Endpoint가 모든 Tool 실행에 사용합니다.
+`agents.runtime`과 `/api/tools/run` Endpoint가 모든 Tool 실행에 사용합니다.
 """
 
 from pydantic import ValidationError

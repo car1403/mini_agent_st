@@ -2,7 +2,7 @@ from uuid import uuid4
 
 import psycopg
 
-from app.config import settings
+from app.core.config import settings
 from app.memory.policy import validate_memory_key
 from app.schemas import MemoryItem
 

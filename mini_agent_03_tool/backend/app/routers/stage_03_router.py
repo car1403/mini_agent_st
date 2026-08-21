@@ -7,8 +7,7 @@ from dataclasses import asdict
 
 from fastapi import APIRouter, HTTPException
 
-from app.agents.tool_loop import run_tool_agent
-from app.agents.tool_selector import decide_tool
+from app.agents.travel_agent import run_travel_agent, select_travel_tool
 from app.core.config import settings
 from app.schemas.stage_03 import (
     ToolCompareRequest, ToolCompareResult, ToolComparisonItem,
@@ -31,7 +30,7 @@ def tools() -> dict:
 def choose_tool(payload: ToolSelectRequest) -> ToolSelectionResult:
     selected = payload.provider or settings.llm_provider
     try:
-        return ToolSelectionResult.model_validate(asdict(decide_tool(selected, payload.message, payload.tool_choice)))
+        return ToolSelectionResult.model_validate(asdict(select_travel_tool(selected, payload.message, payload.tool_choice)))
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:
@@ -43,7 +42,7 @@ def compare_tool_selection(payload: ToolCompareRequest) -> ToolCompareResult:
     items = []
     for selected in payload.providers:
         try:
-            decision = ToolSelectionResult.model_validate(asdict(decide_tool(selected, payload.message, payload.tool_choice)))
+            decision = ToolSelectionResult.model_validate(asdict(select_travel_tool(selected, payload.message, payload.tool_choice)))
             items.append(ToolComparisonItem(provider=selected, status="success", decision=decision))
         except Exception as error:
             items.append(ToolComparisonItem(provider=selected, status="error", error=str(error)))
@@ -59,7 +58,7 @@ def execute_tool(payload: ToolRunRequest) -> ToolRunResult:
 def complete_tool_loop(payload: ToolCompleteRequest) -> ToolCompleteResult:
     selected = payload.provider or settings.llm_provider
     try:
-        return run_tool_agent(selected, payload.message, payload.tool_choice)
+        return run_travel_agent(selected, payload.message, payload.tool_choice)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:

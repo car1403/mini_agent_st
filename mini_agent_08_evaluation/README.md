@@ -2,6 +2,10 @@
 
 완성한 여행 Agent를 작은 시나리오로 반복 검사하고, 실패하면 Trace에서 원인을 찾습니다.
 
+## Backend 공통 구조
+
+두 Backend 모두 Mini Agent 03의 공통 계층 구조를 따르며 Evaluation만 `services/evaluation_service.py`와 `evaluation_router.py`, Evaluation Schema로 확장합니다. Provider·Tool·RAG·Memory·Agent Router는 서로 분리된 Swagger 그룹을 사용합니다.
+
 ## 학습 순서
 
 | 메뉴 | 주제 | 핵심 실습 |

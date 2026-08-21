@@ -1,14 +1,14 @@
 import httpx
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 
-from app.config import settings
+from app.core.config import settings
 from app.rag.chunking import split_document
 from app.rag.documents import TRAVEL_DOCUMENTS
 from app.rag.pgvector_store import connect
 from app.rag.pdf_ingestion import pdf_to_chunks
 from app.rag import redis_cache
 from app.rag.service import answer, index_chunks, index_documents, search
-from app.providers import generate
+from app.services.generation_service import generate
 from app.schemas import (
     ChunkPreviewRequest, RagAnswerRequest, RagAnswerResult, RagIndexRequest,
     RagAgentRequest, RagAgentResult, RagIndexResult, RagSearchRequest,
@@ -16,7 +16,7 @@ from app.schemas import (
 )
 
 
-rag_router = APIRouter(prefix="/api/rag", tags=["RAG"])
+rag_router = APIRouter(prefix="/api/rag", tags=["04 · RAG"])
 
 
 @rag_router.get("/documents")

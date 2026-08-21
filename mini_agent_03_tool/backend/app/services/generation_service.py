@@ -1,6 +1,6 @@
 """일반 텍스트 생성 유스케이스를 Provider 레지스트리에 연결합니다.
 
-Stage 01 라우터와 `agents.response_builder`가 Provider 독립적인 생성 진입점으로 사용합니다.
+Stage 01 라우터가 Provider 독립적인 생성 진입점으로 사용합니다.
 """
 
 from app.providers.models import ProviderResult

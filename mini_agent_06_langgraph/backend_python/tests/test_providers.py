@@ -1,5 +1,5 @@
 from app.providers.mock import MockProvider
-from app.schemas.models import TravelPlan
+from app.schemas import TravelPlan
 
 
 def test_mock_provider_text_contract() -> None:

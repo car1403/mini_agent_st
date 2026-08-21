@@ -15,7 +15,7 @@ from app.schemas import (
 )
 
 
-memory_router = APIRouter(prefix="/api/memory", tags=["Memory"])
+memory_router = APIRouter(prefix="/api/memory", tags=["05 · Memory"])
 
 
 @memory_router.get("/types")

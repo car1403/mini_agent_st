@@ -2,7 +2,7 @@
 
 from time import perf_counter
 
-from app.tools.travel_tools import select_tool
+from app.agents.mock_selector import select_tool
 
 
 CORE_SCENARIOS = [

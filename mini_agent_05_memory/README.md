@@ -2,6 +2,10 @@
 
 Mini Agent 04의 RAG 화면을 유지하면서 대화 Window, Redis 단기 상태, PostgreSQL 장기 사용자 Memory와 Hybrid 복원을 추가한 누적형 완성본입니다.
 
+## Backend 공통 구조
+
+Mini Agent 03의 `core`, `providers`, `routers`, `schemas`, `services`, `agents`, `tools` 구조를 유지하고 `rag/`, `memory/`를 과정 전용 계층으로 추가합니다. Swagger는 Stage 01~05로 구분하며 Schema도 `common`, Stage 01~03, `rag`, `memory`로 분리합니다.
+
 ```text
 질문
 → 사용자별 Memory 조회

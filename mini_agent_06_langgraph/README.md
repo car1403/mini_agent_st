@@ -2,6 +2,10 @@
 
 일반 Python Workflow를 State, Node, Edge를 사용하는 LangGraph로 한 단계씩 옮깁니다.
 
+## Backend 공통 구조
+
+`backend_python`과 `backend_langgraph` 모두 `core`, `providers`, `routers`, `schemas`, `services`, `agents`, `tools` 구조를 공유합니다. LangGraph 구현만 `workflows/`에 추가되며 Provider는 `registry.py`와 모델별 Adapter, Tool은 `registry.py`·`executor.py`·`travel/`로 분리합니다.
+
 이번 단계의 목표는 복잡한 Agent 완성이 아닙니다.
 
 > 같은 실행 흐름을 일반 Python과 LangGraph로 표현하고, State와 실행 경로를 확인할 수 있다.

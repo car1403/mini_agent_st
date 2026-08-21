@@ -1,8 +1,11 @@
+"""외부 API 없이 Provider 응답을 재현하는 교육용 Mock Adapter입니다."""
+
 from typing import TypeVar
 
 from pydantic import BaseModel
 
-from app.providers.base import ProviderResult, timed_call
+from app.providers.base import timed_call
+from app.providers.models import ProviderResult
 
 
 T = TypeVar("T", bound=BaseModel)

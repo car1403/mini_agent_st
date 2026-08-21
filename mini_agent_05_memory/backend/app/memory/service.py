@@ -1,4 +1,4 @@
-from app.providers import generate
+from app.services.generation_service import generate
 from app.memory import postgres_store
 from app.memory.mock_store import mock_memory_store
 from app.memory.relevance import relevant_memories

@@ -6,7 +6,7 @@ from typing import Any
 
 from redis import Redis
 
-from app.config import settings
+from app.core.config import settings
 
 
 KEY_PREFIX = "mini-agent:rag-answer:"

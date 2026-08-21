@@ -1,6 +1,6 @@
 """Ollama HTTP API를 공통 Provider 계약으로 변환하는 어댑터입니다.
 
-`providers.registry`가 생성하며 generation/structured services와 `agents.tool_selector`가 사용합니다.
+`providers.registry`가 생성하며 Stage 01·02의 generation/structured services가 사용합니다.
 """
 
 from time import perf_counter

@@ -1,4 +1,4 @@
-"""Tool 선택과 실행 순서를 담당하는 Agent 패키지입니다.
+"""Stage 03의 도메인 Agent와 공통 실행 흐름입니다.
 
-Router는 이 패키지의 `tool_loop`를 통해 완성된 Agent 실행 결과를 얻습니다.
+학습 시작점은 `travel_agent.py`이며 `runtime.py`가 실행 순서를 담당합니다.
 """

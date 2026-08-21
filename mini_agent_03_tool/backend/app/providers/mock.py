@@ -29,7 +29,7 @@ class MockProvider:
         return ProviderResult(self.name, self.model, result.model_dump(), 0)
 
     def select_tool(self, message: str, tools: list[dict[str, Any]], tool_choice: str = "auto") -> ProviderToolCall:
-        raise NotImplementedError("Mock Tool 선택은 agents.mock_selector가 담당합니다.")
+        raise NotImplementedError("Stage 03 Tool 선택은 agents.travel_agent가 직접 담당합니다.")
 
     def status(self) -> dict[str, Any]:
         return {"provider": self.name, "configured": True, "model": self.model, "environment": "local-python"}

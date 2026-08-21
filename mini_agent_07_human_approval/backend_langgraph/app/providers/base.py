@@ -1,23 +1,13 @@
-from dataclasses import asdict, dataclass
+"""Provider 공통 Protocol과 호출 시간 측정 기능을 정의합니다."""
+
 from time import perf_counter
 from typing import Any, Callable, Protocol, TypeVar
 
 from pydantic import BaseModel
+from app.providers.models import ProviderResult
 
 
 T = TypeVar("T", bound=BaseModel)
-
-
-@dataclass
-class ProviderResult:
-    provider: str
-    model: str
-    content: Any
-    latency_ms: int
-    fallback_used: bool = False
-
-    def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
 
 
 class LlmProvider(Protocol):

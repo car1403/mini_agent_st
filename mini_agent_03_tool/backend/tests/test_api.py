@@ -3,6 +3,8 @@ from datetime import date, timedelta
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.agents import runtime
+from app.agents.travel_agent import select_travel_tool
 from app.tools.registry import TOOL_REGISTRY, ToolSpec, get_tool_definitions
 
 
@@ -110,6 +112,41 @@ def test_tool_compare_keeps_provider_error() -> None:
     assert results[0]["status"] == "success"
     if results[1]["status"] == "error":
         assert "OPENAI_API_KEY" in results[1]["error"]
+
+
+def test_stage_03_rejects_advanced_providers() -> None:
+    response = client.post(
+        "/api/tools/select",
+        json={"provider": "gemini", "message": "부산 날씨"},
+    )
+    assert response.status_code == 422
+    assert "mock과 openai만 지원" in response.json()["detail"]
+
+
+def test_openai_tool_call_is_visible_and_direct(monkeypatch) -> None:
+    class FunctionCall:
+        type = "function_call"
+        name = "get_current_weather"
+        arguments = '{"city":"부산"}'
+
+    class Responses:
+        def __init__(self) -> None:
+            self.kwargs = None
+
+        def create(self, **kwargs):
+            self.kwargs = kwargs
+            return type("Response", (), {"output": [FunctionCall()]})()
+
+    responses = Responses()
+    client_double = type("OpenAIClient", (), {"responses": responses})()
+    monkeypatch.setattr(runtime, "_openai_client", lambda: client_double)
+
+    decision = select_travel_tool("openai", "부산 날씨")
+
+    assert decision.tool_name == "get_current_weather"
+    assert decision.arguments == {"city": "부산"}
+    assert responses.kwargs["input"] == "부산 날씨"
+    assert responses.kwargs["tools"]
 
 
 def test_mock_agent_loop_uses_tool_result() -> None:

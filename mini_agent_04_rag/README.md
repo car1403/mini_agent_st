@@ -2,6 +2,10 @@
 
 Mini Agent 03의 메뉴와 구조를 그대로 유지하면서 문서 검색과 근거 기반 답변을 추가한 누적형 완성본입니다.
 
+## Backend 공통 구조
+
+`core`, `providers`, `routers`, `schemas`, `services`, `agents`, `tools`는 Mini Agent 03과 같은 책임을 유지합니다. 04에서는 `rag/`만 과정 전용 계층으로 추가됩니다. Router와 Schema는 Stage 01~03 및 `rag`로 분리되고, Tool은 `registry.py`와 `executor.py`의 단일 등록·실행 경로를 사용합니다.
+
 ```text
 Streamlit app_pages
   → clients/agent_client.py

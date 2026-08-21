@@ -50,9 +50,7 @@ providers/
 └── ollama.py
 ```
 
-Provider별 파일은 Tool Registry를 직접 import하지 않습니다. Agent가 사용할 Tool 목록을
-인자로 전달하고 Provider는 이를 각 모델 API 형식으로 변환하기만 합니다.
-
-Mock 모드의 Tool 선택은 외부 모델 Adapter가 아니라 `agents.mock_selector`가 실제 LLM의
-판단을 재현합니다. 따라서 Mock Provider는 생성·구조화 응답을, Mock Selector는 교육용
-Tool 판단을 각각 담당합니다.
+이 Provider Adapter들은 Stage 01·02의 일반 생성과 구조화 출력 호환성을 위해 유지합니다.
+Stage 03의 Tool Calling은 Adapter를 거치지 않습니다. `agents/travel_agent.py`가 여행
+도메인을 정의하고 `agents/runtime.py`가 OpenAI SDK를 직접 호출합니다. 멀티 Provider
+Tool Adapter는 Mini Agent 04에서 도입합니다.
