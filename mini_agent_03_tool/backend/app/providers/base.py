@@ -7,7 +7,7 @@ from typing import Any, Protocol
 
 from pydantic import BaseModel
 
-from app.providers.models import ProviderResult, ProviderToolCall
+from app.providers.models import ProviderResult
 
 
 class LLMProvider(Protocol):
@@ -18,9 +18,5 @@ class LLMProvider(Protocol):
     def generate_structured(
         self, system_prompt: str, message: str, response_schema: type[BaseModel]
     ) -> ProviderResult: ...
-
-    def select_tool(
-        self, message: str, tools: list[dict[str, Any]], tool_choice: str = "auto"
-    ) -> ProviderToolCall: ...
 
     def status(self) -> dict[str, Any]: ...

@@ -8,9 +8,7 @@ from dataclasses import asdict
 from fastapi import APIRouter, HTTPException
 
 from app.agents.travel_agent import run_travel_agent, select_travel_tool
-from app.core.config import settings
 from app.schemas.stage_03 import (
-    ToolCompareRequest, ToolCompareResult, ToolComparisonItem,
     ToolCompleteRequest, ToolCompleteResult, ToolRunRequest, ToolRunResult,
     ToolSelectRequest, ToolSelectionResult,
 )
@@ -30,26 +28,12 @@ def tools() -> dict:
 @stage_03_router.post("/api/tools/select", response_model=ToolSelectionResult)
 def choose_tool(payload: ToolSelectRequest) -> ToolSelectionResult:
     """[Agent 사용] Travel Agent가 LLM을 이용해 Tool과 arguments만 선택하며 Tool은 실행하지 않습니다."""
-    selected = payload.provider or settings.llm_provider
     try:
-        return ToolSelectionResult.model_validate(asdict(select_travel_tool(selected, payload.message, payload.tool_choice)))
+        return ToolSelectionResult.model_validate(asdict(select_travel_tool(payload.message, payload.tool_choice)))
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:
-        raise HTTPException(status_code=502, detail=f"{selected} Tool 선택에 실패했습니다: {error}") from error
-
-
-@stage_03_router.post("/api/tools/compare", response_model=ToolCompareResult)
-def compare_tool_selection(payload: ToolCompareRequest) -> ToolCompareResult:
-    """[Agent 사용] Provider별로 Travel Agent의 Tool 선택 결과만 비교하며 Tool은 실행하지 않습니다."""
-    items = []
-    for selected in payload.providers:
-        try:
-            decision = ToolSelectionResult.model_validate(asdict(select_travel_tool(selected, payload.message, payload.tool_choice)))
-            items.append(ToolComparisonItem(provider=selected, status="success", decision=decision))
-        except Exception as error:
-            items.append(ToolComparisonItem(provider=selected, status="error", error=str(error)))
-    return ToolCompareResult(request_count=len(payload.providers), results=items)
+        raise HTTPException(status_code=502, detail=f"OpenAI Tool 선택에 실패했습니다: {error}") from error
 
 
 @stage_03_router.post("/api/tools/run", response_model=ToolRunResult)
@@ -61,10 +45,9 @@ def execute_tool(payload: ToolRunRequest) -> ToolRunResult:
 @stage_03_router.post("/api/tools/complete", response_model=ToolCompleteResult)
 def complete_tool_loop(payload: ToolCompleteRequest) -> ToolCompleteResult:
     """[Agent 사용] Travel Agent가 Tool 선택·실행·최종 답변 생성의 전체 Cycle을 수행합니다."""
-    selected = payload.provider or settings.llm_provider
     try:
-        return run_travel_agent(selected, payload.message, payload.tool_choice)
+        return run_travel_agent(payload.message, payload.tool_choice)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
     except Exception as error:
-        raise HTTPException(status_code=502, detail=f"{selected} Agent Cycle 실패: {error}") from error
+        raise HTTPException(status_code=502, detail=f"OpenAI Agent Cycle 실패: {error}") from error

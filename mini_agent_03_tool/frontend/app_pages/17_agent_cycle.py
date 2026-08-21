@@ -7,7 +7,6 @@ from core.api_client import BackendAPIError
 st.title("🔁 Tool Result로 최종 답변 만들기")
 st.caption("LLM 선택 → Python Tool 실행 → LLM 최종 답변의 세 단계를 확인합니다.")
 
-provider = st.selectbox("실습 모드", ["mock", "openai"])
 tool_choice = st.selectbox("Tool Choice", ["auto", "none", "required"])
 message = st.selectbox(
     "질문",
@@ -23,7 +22,7 @@ st.code("질문 → ① LLM이 Tool 선택 → ② Python이 실행 → ③ LLM�
 
 if st.button("Agent Cycle 실행", type="primary"):
     try:
-        result = complete_tool_loop(provider, message, tool_choice)
+        result = complete_tool_loop(message, tool_choice)
         st.subheader("1. LLM이 Tool과 arguments 선택")
         st.json(result["decision"])
         st.subheader("2. Python Backend가 Tool 실행")

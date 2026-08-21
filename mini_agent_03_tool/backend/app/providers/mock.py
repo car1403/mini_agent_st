@@ -1,13 +1,13 @@
 """외부 API 없이 일반/구조화 생성을 재현하는 학습용 Mock Provider입니다.
 
-`providers.registry`가 생성하며 Stage 01·02 예제와 테스트에서 사용합니다. Mock Tool 선택은 Agent 계층에 둡니다.
+`providers.registry`가 생성하며 Stage 01·02 예제와 테스트에서만 사용합니다.
 """
 
 from typing import Any
 
 from pydantic import BaseModel
 
-from app.providers.models import ProviderResult, ProviderToolCall
+from app.providers.models import ProviderResult
 
 
 class MockProvider:
@@ -27,9 +27,6 @@ class MockProvider:
             cautions=["실제 예약 전 가격과 운영 시간을 확인하세요."],
         )
         return ProviderResult(self.name, self.model, result.model_dump(), 0)
-
-    def select_tool(self, message: str, tools: list[dict[str, Any]], tool_choice: str = "auto") -> ProviderToolCall:
-        raise NotImplementedError("Stage 03 Tool 선택은 agents.travel_agent가 직접 담당합니다.")
 
     def status(self) -> dict[str, Any]:
         return {"provider": self.name, "configured": True, "model": self.model, "environment": "local-python"}

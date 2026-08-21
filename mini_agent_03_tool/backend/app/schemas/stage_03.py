@@ -52,7 +52,6 @@ class AttractionArgs(BaseModel):
 
 
 class ToolSelectRequest(MessageRequest):
-    provider: ProviderName | None = None
     tool_choice: Literal["auto", "none", "required"] = "auto"
 
 
@@ -68,23 +67,6 @@ class ToolSelectionResult(BaseModel):
     needs_clarification: bool = False
     follow_up_question: str = ""
     raw_tool_call: dict[str, Any] | None = None
-
-
-class ToolCompareRequest(MessageRequest):
-    providers: list[ProviderName] = Field(default_factory=lambda: ["mock"], min_length=1, max_length=4)
-    tool_choice: Literal["auto", "none", "required"] = "auto"
-
-
-class ToolComparisonItem(BaseModel):
-    provider: ProviderName
-    status: Literal["success", "error"]
-    decision: ToolSelectionResult | None = None
-    error: str | None = None
-
-
-class ToolCompareResult(BaseModel):
-    request_count: int
-    results: list[ToolComparisonItem]
 
 
 class ToolRunRequest(BaseModel):

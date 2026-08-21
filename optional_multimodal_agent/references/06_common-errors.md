@@ -8,7 +8,7 @@
 → Python 실행 경로
 → requirements 설치
 → .env 위치
-→ APP_MODE
+→ LLM_PROVIDER와 STORAGE_MODE
 → Backend URL
 → 요청·응답 Schema
 → trace_id
@@ -28,4 +28,4 @@
 
 ## 실제 LLM 연결이 실패할 때
 
-먼저 `APP_MODE=mock`으로 전체 흐름을 확인합니다. 그 후 API Key, 모델명, 네트워크, 사용량 제한을 확인합니다.
+먼저 `LLM_PROVIDER=mock`으로 전체 흐름을 확인합니다. 그 후 실제 Provider를 선택하고 API Key, 모델명, 네트워크, 사용량 제한을 확인합니다.

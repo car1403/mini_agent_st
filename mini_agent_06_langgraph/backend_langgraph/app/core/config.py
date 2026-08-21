@@ -9,7 +9,6 @@ load_dotenv()
 
 @dataclass(frozen=True)
 class Settings:
-    app_mode: str = os.getenv("APP_MODE", "mock")
     llm_provider: str = os.getenv("LLM_PROVIDER", "mock")
     storage_mode: str = os.getenv("STORAGE_MODE", "memory")
     llm_fallback_enabled: bool = os.getenv("LLM_FALLBACK_ENABLED", "false").lower() == "true"

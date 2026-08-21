@@ -5,10 +5,10 @@ Provider는 OpenAI, Gemini, Ollama, Mock처럼 서로 다른 LLM API를 애플�
 
 ## 담당하는 일
 
-1. 공통 Prompt, Message와 Tool Definition을 모델별 요청 형식으로 변환합니다.
+1. 공통 Prompt와 Message를 모델별 요청 형식으로 변환합니다.
 2. 선택된 모델 API를 한 번 호출합니다.
-3. 모델별 응답을 공통 텍스트, 구조화 결과 또는 Tool Call로 정규화합니다.
-4. Provider, 모델, 지연 시간과 원본 Tool Call 같은 통신 정보를 반환합니다.
+3. 모델별 응답을 공통 텍스트 또는 구조화 결과로 정규화합니다.
+4. Provider, 모델과 지연 시간 같은 통신 정보를 반환합니다.
 
 ## 담당하지 않는 일
 
@@ -20,18 +20,14 @@ Provider는 OpenAI, Gemini, Ollama, Mock처럼 서로 다른 LLM API를 애플�
 ## 다른 계층과의 관계
 
 ```text
-Router → Service ──────────────┐
-                               ↓
-                         Provider Adapter → LLM API
-                               ↑
-Router → Agent → Tool Selector ┘
-               ↓
-          Tool Executor → 실제 Tool
+Router → Service → Provider Adapter → LLM API
+
+Router → Travel Agent → Agent Runtime → OpenAI Tool Calling
+                                      → Tool Executor → 실제 Tool
 ```
 
 - 일반 생성과 Structured Output은 Service가 Provider를 호출합니다.
-- Tool 선택 요청은 Agent가 Tool Definition과 함께 Provider를 호출합니다.
-- Provider가 반환한 Tool Call은 Agent가 검증하고 Tool Executor에 전달합니다.
+- Stage 03 Tool Calling은 Provider Adapter를 거치지 않고 Agent Runtime이 OpenAI를 직접 호출합니다.
 
 ## 현재 구조
 

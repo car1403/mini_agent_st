@@ -36,17 +36,8 @@ def test_tool_specs_are_the_single_source_for_definition_and_execution() -> None
         assert definitions[name]["input_schema"] == spec.input_model.model_json_schema()
 
 
-def test_mock_selects_hotel_without_running_it() -> None:
-    response = client.post("/api/tools/select", json={"provider": "mock", "message": "부산 숙소를 찾아줘."})
-    assert response.status_code == 200
-    assert response.json()["tool_name"] == "search_hotels"
-    assert response.json()["arguments"]["city"] == "부산"
-    assert response.json()["needs_clarification"] is True
-    assert set(response.json()["missing_arguments"]) == {"check_in", "check_out", "guests"}
-
-
 def test_tool_choice_none_prevents_selection() -> None:
-    response = client.post("/api/tools/select", json={"provider": "mock", "tool_choice": "none", "message": "오늘 부산 날씨"})
+    response = client.post("/api/tools/select", json={"tool_choice": "none", "message": "오늘 부산 날씨"})
     assert response.status_code == 200
     assert response.json()["tool_name"] is None
 
@@ -105,24 +96,6 @@ def test_invalid_hotel_dates_return_validation_error() -> None:
     assert response.json()["error"]["code"] == "TOOL_VALIDATION_ERROR"
 
 
-def test_tool_compare_keeps_provider_error() -> None:
-    response = client.post("/api/tools/compare", json={"providers": ["mock", "openai"], "message": "부산 날씨"})
-    assert response.status_code == 200
-    results = response.json()["results"]
-    assert results[0]["status"] == "success"
-    if results[1]["status"] == "error":
-        assert "OPENAI_API_KEY" in results[1]["error"]
-
-
-def test_stage_03_rejects_advanced_providers() -> None:
-    response = client.post(
-        "/api/tools/select",
-        json={"provider": "gemini", "message": "부산 날씨"},
-    )
-    assert response.status_code == 422
-    assert "mock과 openai만 지원" in response.json()["detail"]
-
-
 def test_openai_tool_call_is_visible_and_direct(monkeypatch) -> None:
     class FunctionCall:
         type = "function_call"
@@ -141,52 +114,9 @@ def test_openai_tool_call_is_visible_and_direct(monkeypatch) -> None:
     client_double = type("OpenAIClient", (), {"responses": responses})()
     monkeypatch.setattr(runtime, "_openai_client", lambda: client_double)
 
-    decision = select_travel_tool("openai", "부산 날씨")
+    decision = select_travel_tool("부산 날씨")
 
     assert decision.tool_name == "get_current_weather"
     assert decision.arguments == {"city": "부산"}
     assert responses.kwargs["input"] == "부산 날씨"
     assert responses.kwargs["tools"]
-
-
-def test_mock_agent_loop_uses_tool_result() -> None:
-    response = client.post(
-        "/api/tools/complete",
-        json={"provider": "mock", "message": "오늘 부산 날씨를 알려줘"},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["decision"]["tool_name"] == "get_current_weather"
-    assert body["tool_result"]["success"] is True
-    assert "get_current_weather" in body["final_answer"]
-
-
-def test_mock_selects_forecast_for_future_weather() -> None:
-    response = client.post("/api/tools/select", json={"provider": "mock", "message": "내일 부산에 비가 올까?"})
-    assert response.status_code == 200
-    body = response.json()
-    assert body["tool_name"] == "get_weather_forecast"
-    assert body["arguments"]["city"] == "부산"
-    assert "target_date" in body["arguments"]
-
-
-def test_agent_loop_asks_before_inventing_missing_arguments() -> None:
-    response = client.post(
-        "/api/tools/complete",
-        json={"provider": "mock", "message": "숙소를 찾아줘"},
-    )
-    assert response.status_code == 200
-    body = response.json()
-    assert body["decision"]["needs_clarification"] is True
-    assert body["tool_result"] is None
-    assert "city" in body["final_answer"]
-
-
-def test_agent_loop_does_not_run_unneeded_tool() -> None:
-    response = client.post(
-        "/api/tools/complete",
-        json={"provider": "mock", "message": "여행을 준비하고 있어요"},
-    )
-    assert response.status_code == 200
-    assert response.json()["decision"]["tool_name"] is None
-    assert response.json()["tool_result"] is None

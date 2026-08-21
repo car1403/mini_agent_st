@@ -48,7 +48,6 @@ def health() -> dict:
     return {
         "status": "ok",
         "agent_type": "langgraph",
-        "mode": settings.app_mode,
         "llm_provider": settings.llm_provider,
         "storage_mode": settings.storage_mode,
     }

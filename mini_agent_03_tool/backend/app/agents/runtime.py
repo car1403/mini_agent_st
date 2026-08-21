@@ -12,7 +12,6 @@
 import json
 from dataclasses import dataclass, field
 from time import perf_counter
-from collections.abc import Callable
 from typing import Any
 
 from app.core.config import settings
@@ -47,29 +46,17 @@ def _openai_client():
     return OpenAI(api_key=settings.openai_api_key)
 
 
-MockToolSelector = Callable[[str, str], ToolDecision]
-
-
 def select_tool(
-    provider: str,
     message: str,
     instructions: str,
     tools: list[dict[str, Any]],
-    mock_selector: MockToolSelector,
     tool_choice: str = "auto",
 ) -> ToolDecision:
-    """첫 번째 단계: LLM이 사용할 Tool과 arguments를 선택합니다."""
-    if provider not in {"mock", "openai"}:
-        raise ValueError("Stage 03 Tool Calling은 mock과 openai만 지원합니다.")
-
+    """첫 번째 단계: OpenAI가 사용할 Tool과 arguments를 선택합니다."""
     if tool_choice == "none":
-        return ToolDecision(provider, "tool-choice-none", None, {}, "Tool 사용 금지", 1.0, 0)
+        return ToolDecision("openai", "tool-choice-none", None, {}, "Tool 사용 금지", 1.0, 0)
 
-    if provider == "mock":
-        decision = mock_selector(message, tool_choice)
-    else:
-        decision = _select_tool_with_openai(message, instructions, tools, tool_choice)
-
+    decision = _select_tool_with_openai(message, instructions, tools, tool_choice)
     return _check_required_arguments(decision, tools)
 
 
@@ -131,22 +118,20 @@ def _check_required_arguments(decision: ToolDecision, tools: list[dict[str, Any]
 
 
 def run_agent(
-    provider: str,
     message: str,
     instructions: str,
     final_answer_instructions: str,
     tools: list[dict[str, Any]],
-    mock_selector: MockToolSelector,
     tool_choice: str = "auto",
 ) -> ToolCompleteResult:
     """선택 → 실행 → 최종 답변의 단일 Agent Cycle을 순서대로 실행합니다."""
-    raw_decision = select_tool(provider, message, instructions, tools, mock_selector, tool_choice)
+    raw_decision = select_tool(message, instructions, tools, tool_choice)
     decision = ToolSelectionResult.model_validate(raw_decision.__dict__)
     trace = [{"stage": "1_tool_selection", "data": decision.model_dump(mode="json")}]
 
     if decision.needs_clarification:
         return ToolCompleteResult(
-            provider=provider,
+            provider="openai",
             question=message,
             decision=decision,
             final_answer=decision.follow_up_question,
@@ -155,7 +140,7 @@ def run_agent(
 
     if decision.tool_name is None:
         return ToolCompleteResult(
-            provider=provider,
+            provider="openai",
             question=message,
             decision=decision,
             final_answer="이 질문에는 실행할 조회 Tool이 필요하지 않습니다.",
@@ -167,7 +152,7 @@ def run_agent(
     trace.append({"stage": "2_tool_execution", "data": tool_result.model_dump(mode="json")})
     if not tool_result.success:
         return ToolCompleteResult(
-            provider=provider,
+            provider="openai",
             question=message,
             decision=decision,
             tool_result=tool_result,
@@ -175,10 +160,10 @@ def run_agent(
             trace=trace,
         )
 
-    final_answer = _make_final_answer(provider, message, tool_result, final_answer_instructions)
+    final_answer = _make_final_answer(message, tool_result, final_answer_instructions)
     trace.append({"stage": "3_final_answer", "data": {"text": final_answer}})
     return ToolCompleteResult(
-        provider=provider,
+        provider="openai",
         question=message,
         decision=decision,
         tool_result=tool_result,
@@ -188,15 +173,11 @@ def run_agent(
 
 
 def _make_final_answer(
-    provider: str,
     question: str,
     tool_result: ToolRunResult,
     instructions: str,
 ) -> str:
     """세 번째 단계: Tool Result를 사용자가 읽을 자연어 답변으로 바꿉니다."""
-    if provider == "mock":
-        return f"{tool_result.tool_name} 조회 결과입니다: {json.dumps(tool_result.data, ensure_ascii=False)}"
-
     prompt = (
         f"사용자 질문: {question}\n"
         f"Tool 이름: {tool_result.tool_name}\n"

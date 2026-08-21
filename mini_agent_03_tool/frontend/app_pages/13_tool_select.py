@@ -14,14 +14,13 @@ try:
 except BackendAPIError as error:
     st.error(str(error))
 
-provider = st.selectbox("실습 모드", ["mock", "openai"])
-st.caption("Mock으로 흐름을 익힌 뒤 OpenAI에서 실제 Tool Calling을 확인합니다.")
+st.caption("OpenAI가 질문과 Tool 설명을 보고 사용할 Tool을 선택합니다.")
 tool_choice = st.selectbox("Tool Choice", ["auto", "none", "required"])
 message = st.selectbox("요청", ["지금 부산에 비가 와?", "내일 부산에 비가 올까?", "부산 숙소를 찾아줘.", "제주 관광지를 추천해 줘.", "여행 준비를 도와줘."])
 
 if st.button("Tool Call 제안 받기"):
     try:
-        decision = select_tool(provider, message, tool_choice)
+        decision = select_tool(message, tool_choice)
         st.session_state["tool_decision"] = decision
         st.json(decision)
         if decision["needs_clarification"]:

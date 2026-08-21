@@ -26,7 +26,7 @@ Streamlit app_pages
 - Allowlist 기반 안전 실행
 - 공통 Tool 오류 코드
 - Tool Result를 사용한 최종 답변
-- Mock으로 흐름 연습 후 OpenAI Tool Calling 실행
+- OpenAI Tool Calling 직접 실행
 
 ## 추가 메뉴
 
@@ -89,8 +89,8 @@ _make_final_answer()
   → LLM이 Tool Result를 자연어 답변으로 변환
 ```
 
-Mock은 API 키 없이 같은 흐름을 연습하기 위한 모드입니다. Gemini·Ollama를 포함한
-Provider Adapter는 다음 과정인 Mini Agent 04에서 도입합니다.
+Stage 03은 실제 OpenAI Tool Calling에 집중합니다. Mock Tool 판단과 멀티 Provider
+Adapter는 포함하지 않으며, 멀티 Provider Adapter는 Mini Agent 04에서 도입합니다.
 
 실행되는 Tool은 날씨·숙소·관광지 조회용 Mock 함수뿐입니다. 실제 예약, 결제, 환불, 삭제는 실행하지 않습니다.
 
@@ -121,7 +121,7 @@ cd C:\mini_agent_st\mini_agent_03_tool
 streamlit run .\frontend\app.py
 ```
 
-기본 Provider는 Mock입니다. 먼저 Mock으로 단일 Agent Cycle을 확인한 다음 OpenAI로 실제 Tool Calling을 실행합니다.
+Stage 03 Tool Calling에는 `OPENAI_API_KEY`가 필요합니다. Stage 01·02의 일반 생성과 구조화 출력은 기존 Provider 선택 기능을 유지합니다.
 
 현재 과정은 Tool 하나를 선택하고 최대 한 번 실행하는 Cycle까지 다룹니다. 여러 Tool을
 반복 호출하는 Agent Loop는 이후 과정에서 최대 반복 횟수와 종료 조건을 함께 추가합니다.
