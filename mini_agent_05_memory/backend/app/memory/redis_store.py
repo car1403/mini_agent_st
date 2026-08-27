@@ -1,4 +1,5 @@
 import json
+from hashlib import sha256
 
 from redis import Redis
 
@@ -10,8 +11,14 @@ def client() -> Redis:
 
 
 def key(user_id: str, session_id: str) -> str:
-    # 사용자 ID를 Key namespace에 포함해 같은 session_id도 서로 격리합니다.
-    return f"mini-agent:session:{user_id}:{session_id}"
+    # 외부 ID를 Token으로 바꿔 Redis glob 문자와 구분자 충돌을 막습니다.
+    return f"mini-agent:session:{_token(user_id)}:{_token(session_id)}"
+
+
+def _token(value: str) -> str:
+    if not value or len(value) > 100:
+        raise ValueError("사용자 ID와 Session ID는 1~100자여야 합니다.")
+    return sha256(value.encode("utf-8")).hexdigest()
 
 
 def save(user_id: str, session_id: str, state: dict) -> int:
@@ -64,7 +71,7 @@ def patch(user_id: str, session_id: str, changes: dict, expected_version: int) -
 
 def delete_for_user(user_id: str) -> int:
     redis_client = client()
-    keys = list(redis_client.scan_iter(match=f"mini-agent:session:{user_id}:*", count=100))
+    keys = list(redis_client.scan_iter(match=f"mini-agent:session:{_token(user_id)}:*", count=100))
     return redis_client.delete(*keys) if keys else 0
 
 

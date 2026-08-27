@@ -43,6 +43,23 @@ def delete_collection(collection: str) -> None:
         cursor.execute("DELETE FROM documents WHERE collection_name = %s", (collection,))
 
 
+def delete_stale_source_chunks(*, collection: str, source: str, keep_count: int) -> int:
+    """새 문서보다 뒤에 남은 이전 버전 Chunk를 제거합니다."""
+    if keep_count < 0:
+        raise ValueError("keep_count는 0 이상이어야 합니다.")
+    with connect() as connection, connection.cursor() as cursor:
+        cursor.execute(
+            """
+            DELETE FROM documents
+            WHERE collection_name = %s
+              AND source = %s
+              AND chunk_index >= %s
+            """,
+            (collection, source, keep_count),
+        )
+        return cursor.rowcount
+
+
 def upsert_text(
     *,
     collection: str,
@@ -140,7 +157,6 @@ def similarity_search(
             }
             for row in cursor.fetchall()
         ]
-
 
 def list_documents(*, collection: str) -> list[dict[str, Any]]:
     """교육용 키워드·Hybrid 검색을 위해 Collection의 Chunk를 읽습니다."""

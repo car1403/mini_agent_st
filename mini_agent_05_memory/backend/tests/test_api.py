@@ -66,6 +66,19 @@ def test_sensitive_memory_key_is_blocked() -> None:
     assert response.status_code == 422
 
 
+def test_sensitive_memory_value_is_blocked() -> None:
+    response = client.post(
+        "/api/memory/items",
+        json={
+            "user_id": "user-a",
+            "key": "hotel_preference",
+            "value": "내 카드번호는 1234-5678-9012-3456",
+            "storage": "mock",
+        },
+    )
+    assert response.status_code == 422
+
+
 def test_personalized_answer_uses_only_relevant_memory() -> None:
     for key, value in [
         ("transportation", "대중교통"),
@@ -91,6 +104,14 @@ def test_redis_session_key_is_scoped_by_user() -> None:
     from app.memory.redis_store import key
 
     assert key("user-a", "trip") != key("user-b", "trip")
+
+
+def test_redis_key_does_not_expose_glob_characters() -> None:
+    from app.memory.redis_store import key
+
+    redis_key = key("user-*", "trip:*")
+    assert "user-*" not in redis_key
+    assert "trip:*" not in redis_key
 
 
 def test_session_api_returns_versioned_state(monkeypatch) -> None:

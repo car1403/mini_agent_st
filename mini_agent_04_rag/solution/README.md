@@ -7,9 +7,9 @@
 | Ollama Embedding | `backend/app/rag/embedding.py` |
 | pgvector 저장·검색 | `backend/app/rag/pgvector_store.py` |
 | Redis TTL Cache | `backend/app/rag/redis_cache.py` |
-| 근거 기반 답변 | `backend/app/rag/service.py` |
-| FastAPI 연결 | `backend/app/routers/rag_router.py` |
-| Streamlit Tool Loop | `frontend/app_pages/13_tool_loop.py` |
-| Streamlit RAG·Trace·Cache | `frontend/app_pages/14~19` |
+| 근거 기반 답변 | `backend/app/simple_service.py` |
+| FastAPI 연결 | `backend/app/simple_router.py` |
+| Streamlit 화면 | `frontend/simple_pages` |
 
-시간이 부족하면 `learning_unit` 01~05 후 완성 화면으로 넘어가고, 07~10에서 실제 검색·LLM·Cache Trace를 시연합니다.
+처음에는 `learning_unit` 01~05를 실행하고, 이후 Frontend의 1~5 화면에서 실제
+pgvector·Ollama·Redis 흐름을 확인합니다.

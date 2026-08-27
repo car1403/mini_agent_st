@@ -5,6 +5,8 @@ from app.routers.stage_02_router import stage_02_router
 from app.routers.stage_03_router import stage_03_router
 from app.routers.rag_router import rag_router
 from app.routers.memory_router import memory_router
+from app.routers.authenticated_memory_router import authenticated_memory_router
+from app.routers.mcp_router import mcp_router
 
 
 TAGS_METADATA = [
@@ -21,3 +23,5 @@ app.include_router(stage_02_router)
 app.include_router(stage_03_router)
 app.include_router(rag_router)
 app.include_router(memory_router)
+app.include_router(authenticated_memory_router)
+app.include_router(mcp_router)

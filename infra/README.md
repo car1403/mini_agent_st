@@ -11,6 +11,7 @@ docker compose up -d
 docker compose ps
 docker exec mini-agent-ollama ollama pull llama3.2
 docker exec mini-agent-ollama ollama pull embeddinggemma
+.\check_rag_prerequisites.ps1
 ```
 
 `llama3.2`는 답변을 만드는 채팅 모델이고 `embeddinggemma`는 문장을 검색용 숫자 벡터로 바꾸는 Embedding 모델입니다.
@@ -23,10 +24,22 @@ docker exec mini-agent-ollama ollama pull embeddinggemma
 | PostgreSQL/pgvector | `127.0.0.1:5433` |
 | Redis | `redis://127.0.0.1:6379/0` |
 
-첫 단계는 Ollama만 사용합니다. PostgreSQL/pgvector는 Mini Agent 04, Redis는 Mini Agent 05부터 본격적으로 연결합니다.
+첫 단계는 Ollama만 사용합니다. Mini Agent 04부터 PostgreSQL/pgvector와 Redis를 함께 사용합니다.
 
-- Mini Agent 04: `documents`에 RAG Chunk와 Vector 저장
+- Mini Agent 04: `documents`에 RAG Chunk와 Vector 저장, Redis에 RAG 답변 Cache와 Multi-Tool Agent의 TTL 상태 저장
 - Mini Agent 05: Redis에 TTL 단기 상태, `user_memories`와 `conversation_messages`에 장기 데이터 저장
+
+## RAG 사전점검
+
+Mini Agent 04의 실제 인프라 실습 전에 다음 명령을 실행합니다.
+
+```powershell
+cd C:\mini_agent_st\infra
+.\check_rag_prerequisites.ps1
+```
+
+Docker CLI, Ollama·PostgreSQL·Redis Port, `llama3.2`·`embeddinggemma` 설치 여부를
+확인하며 하나라도 준비되지 않으면 종료 코드 1을 반환합니다.
 
 ## 기존 PostgreSQL Volume 주의
 

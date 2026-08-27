@@ -1,4 +1,6 @@
-"""Mini Agent 02의 Prompt·Pydantic·Structured Output API를 제공합니다."""\n\nfrom dataclasses import asdict
+"""Mini Agent 02의 Prompt·Pydantic·Structured Output API를 제공합니다."""
+
+from dataclasses import asdict
 import json
 
 from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile

@@ -1,16 +1,14 @@
-"""RAG 과정의 Pydantic API 계약입니다."""
+"""초보자용 RAG API에서 사용하는 데이터 모양입니다."""
 
-from datetime import date
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, Field
 
-from app.schemas.common import MessageRequest, ProviderName
 
-class ChunkPreviewRequest(BaseModel):
+class ChunkRequest(BaseModel):
     text: str = Field(min_length=1, max_length=10000)
-    source: str = Field(default="student-document.md", min_length=1, max_length=200)
-    title: str = Field(default="학생 문서", min_length=1, max_length=200)
+    source: str = "student-document.md"
+    title: str = "학생 문서"
     sentences_per_chunk: int = Field(default=2, ge=1, le=10)
 
 
@@ -23,15 +21,15 @@ class RagChunk(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
-class RagSearchRequest(BaseModel):
-    query: str = Field(min_length=1, max_length=2000)
+class SearchRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
     mode: Literal["keyword", "pgvector", "hybrid"] = "keyword"
     top_k: int = Field(default=3, ge=1, le=10)
     score_threshold: float | None = Field(default=None, ge=-1, le=1)
     metadata_filter: dict[str, Any] = Field(default_factory=dict)
 
 
-class RagSearchItem(BaseModel):
+class SearchItem(BaseModel):
     title: str
     content: str
     source: str
@@ -43,58 +41,38 @@ class RagSearchItem(BaseModel):
     matched_by: list[str] = Field(default_factory=list)
 
 
-class RagSearchResult(BaseModel):
-    query: str
-    mode: Literal["keyword", "pgvector", "hybrid"]
-    results: list[RagSearchItem]
+class SearchResult(BaseModel):
+    question: str
+    mode: str
+    results: list[SearchItem]
 
 
-class RagAnswerRequest(RagSearchRequest):
-    provider: ProviderName = "mock"
-    use_cache: bool = True
+class AnswerRequest(SearchRequest):
+    use_ollama: bool = False
+    use_cache: bool = False
 
 
-class RagAnswerResult(BaseModel):
+class AnswerResult(BaseModel):
     answer: str
     grounded: bool
-    provider: ProviderName
-    search_mode: Literal["keyword", "pgvector", "hybrid"]
+    mode: str
     context: str = ""
     sources: list[str] = Field(default_factory=list)
-    results: list[RagSearchItem] = Field(default_factory=list)
+    results: list[SearchItem] = Field(default_factory=list)
     cache_hit: bool = False
     cache_ttl_seconds: int = 0
     trace: list[dict[str, Any]] = Field(default_factory=list)
 
 
-class RagIndexRequest(BaseModel):
-    reset_collection: bool = True
-
-
-class RagIndexResult(BaseModel):
+class IndexResult(BaseModel):
     collection: str
     indexed_count: int
     embedding_model: str
+    source: str | None = None
 
 
-class RagTextIndexRequest(BaseModel):
+class TextIndexRequest(BaseModel):
     title: str = Field(min_length=1, max_length=200)
     content: str = Field(min_length=1, max_length=100000)
     source: str = Field(min_length=1, max_length=200)
     metadata: dict[str, Any] = Field(default_factory=dict)
-    sentences_per_chunk: int = Field(default=2, ge=1, le=20)
-    replace_source: bool = True
-
-
-class RagAgentRequest(RagSearchRequest):
-    provider: ProviderName = "mock"
-
-
-class RagAgentResult(BaseModel):
-    question: str
-    provider: ProviderName
-    tool_call: dict[str, Any]
-    tool_result: list[RagSearchItem]
-    final_answer: str
-    sources: list[str] = Field(default_factory=list)
-

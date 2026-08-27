@@ -35,6 +35,7 @@ mini_agent_sam
 | `mini_agent_01_llm` | 판단 함수→API→세 Provider 비교·이미지 분석·음성 생성 |
 | `mini_agent_02_structured_output` | Pydantic 구조화 결과 |
 | `mini_agent_03_tool` | Schema·선택·안전 실행·Tool Result 최종 답변 |
+| `mini_agent_03_mcp` | 별도 Streamable HTTP MCP Server의 Tool 발견·호출 |
 | `mini_agent_04_rag` | Chunk·키워드 검색·근거 답변·Ollama/pgvector |
 | `mini_agent_05_memory` | 대화 Window·사용자 CRUD·개인화·Redis·PostgreSQL |
 | `mini_agent_06_langgraph` | 일반 Python→State·Node·Edge·분기·반복·Checkpoint |

@@ -1,4 +1,6 @@
-"""Mini Agent 01의 LLM·Provider·분류·Media API를 제공합니다."""\n\nfrom dataclasses import asdict
+"""Mini Agent 01의 LLM·Provider·분류·Media API를 제공합니다."""
+
+from dataclasses import asdict
 import json
 
 from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile
@@ -33,7 +35,7 @@ stage_01_router = APIRouter(tags=["01 · LLM 기초"])
 
 @stage_01_router.get("/health")
 def health() -> dict:
-    return {"status": "ok", "stage": "mini_agent_04_rag", "default_provider": settings.llm_provider}
+    return {"status": "ok", "stage": "mini_agent_05_memory", "default_provider": settings.llm_provider}
 
 
 @stage_01_router.get("/api/providers")

@@ -1,34 +1,26 @@
-# Mini Agent 04 · RAG
+# Mini Agent 04 · Simple RAG
 
-Mini Agent 03의 메뉴와 구조를 그대로 유지하면서 문서 검색과 근거 기반 답변을 추가한 누적형 완성본입니다.
-
-## Backend 공통 구조
-
-`core`, `providers`, `routers`, `schemas`, `services`, `agents`, `tools`는 Mini Agent 03과 같은 책임을 유지합니다. 04에서는 `rag/`만 과정 전용 계층으로 추가됩니다. Router와 Schema는 Stage 01~03 및 `rag`로 분리되고, Tool은 `registry.py`와 `executor.py`의 단일 등록·실행 경로를 사용합니다.
+문서를 Chunk로 나누고, 관련 문서를 검색한 뒤, 그 근거로 답변하는 과정을 배우는
+초보자용 RAG 프로젝트입니다. 이전 LLM·Prompt·Tool 과정과 별도 Labs는 포함하지
+않습니다.
 
 ```text
-Streamlit app_pages
-  → clients/agent_client.py
-  → FastAPI routers
-  → rag/service.py
-  → keyword 또는 Ollama + pgvector
-  → Redis TTL 답변 Cache
+문서 → Chunk → Embedding → pgvector 검색 → Context → Ollama 답변
+                                      └→ 동일 질문은 Redis Cache
 ```
 
-## 새로 추가된 메뉴
+## 화면 순서
 
-1. RAG 흐름
-2. 문서와 Chunk
-3. 문서 검색
-4. 근거 기반 답변
-5. Ollama + pgvector + Redis
-6. 직접 입력 문장과 PDF 색인
-7. Metadata Filter와 Hybrid Search
-8. RAG Agent 검색 Tool
+1. Chunk와 키워드 검색
+2. pgvector 의미 검색
+3. 근거 기반 답변
+4. PDF RAG
+5. Cache와 검색 조건
 
-`keyword + mock`은 Docker와 API Key 없이 실행됩니다. 실제 구성에서는 pgvector가 Chunk와 Embedding을 영구 저장하고 Redis가 동일 조건의 답변을 TTL 동안 Cache합니다.
+`keyword` 검색과 Mock 답변은 Docker 없이 실행할 수 있습니다. `pgvector`, Ollama,
+PDF 색인, Redis Cache는 공용 Docker 환경이 필요합니다.
 
-## 실행 1: Mock RAG
+## 설치
 
 ```powershell
 cd C:\mini_agent_st\mini_agent_04_rag
@@ -36,10 +28,19 @@ python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 Copy-Item .env.example .env
+```
 
-cd backend
+## Backend 실행
+
+```powershell
+cd C:\mini_agent_st\mini_agent_04_rag\backend
+..\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --port 8000
 ```
+
+API 문서: `http://127.0.0.1:8000/docs`
+
+## Frontend 실행
 
 새 터미널에서 실행합니다.
 
@@ -49,38 +50,51 @@ cd C:\mini_agent_st\mini_agent_04_rag
 streamlit run .\frontend\app.py
 ```
 
-## 실행 2: 실제 pgvector RAG
+화면: `http://127.0.0.1:8501`
+
+## 실제 RAG 환경
 
 ```powershell
 cd C:\mini_agent_st\infra
-Copy-Item .env.example .env
 docker compose up -d
 docker exec mini-agent-ollama ollama pull embeddinggemma
+docker exec mini-agent-ollama ollama pull llama3.2
 ```
 
-Streamlit의 `pgvector 실습` 메뉴에서 연결 상태를 확인하고 `교육용 문서 색인`을 누릅니다.
+Frontend의 `pgvector 의미 검색`에서 `교육 문서 저장`을 먼저 실행한 뒤 의미 검색과
+Ollama 답변을 확인합니다.
 
-`근거 기반 답변`에서 Redis Cache를 켜고 같은 질문을 두 번 실행하면 MISS→HIT와 남은 TTL, 전체 Trace를 확인할 수 있습니다. 문서를 재색인하면 Mini Agent RAG 전용 Cache가 무효화됩니다.
+## 독립 Python 예제
 
-`텍스트·PDF 색인`에서는 직접 작성한 정책과 텍스트형 PDF를 등록합니다. PDF 검색 결과는
-페이지 번호를 Metadata로 유지하며 스캔 PDF는 별도 OCR이 필요합니다. `Metadata·Hybrid`
-메뉴는 활성 문서 Filter, 요청별 유사도 임계값, 키워드와 pgvector 순위를 결합한 RRF를
-비교합니다. `RAG Agent Tool`은 DB나 임의 SQL 대신 제한된 `search_knowledge_base`
-계약만 사용합니다.
+`learning_unit`에는 `C:\aidevs\05_llm-agent-orchestration\04_rag`의 01~15 예제만
+유지합니다. `10_labs`와 `20_assignments`는 이 프로젝트 범위에서 제외했습니다.
 
-> 기존 PostgreSQL Volume에는 새 `documents` 테이블이 자동 생성되지 않을 수 있습니다. 이 경우 [공용 인프라 안내](../infra/README.md)의 기존 Volume 주의를 확인합니다.
+PDF 단계는 다음처럼 실행합니다.
 
-## 안전 범위
+```powershell
+cd C:\mini_agent_st\mini_agent_04_rag\learning_unit
+python .\12_01_pdf_chunk.py
+python .\12_02_pdf_rag.py
+python .\12_03_pdf_rag_ollama.py
+python .\12_04_pdf_rag_cache.py
+```
 
-- 기존 여행 Tool은 조회용 Mock이며, RAG Agent에는 읽기 전용 지식검색 Tool만 제공합니다.
-- Agent에 DB 연결 정보나 임의 SQL 실행 권한을 제공하지 않습니다.
-- RAG 색인 초기화는 `mini_agent_travel` collection만 대상으로 합니다.
-- 전체 DB나 다른 단계의 문서는 삭제하지 않습니다.
-- 근거 문서가 없으면 Mock RAG는 답변하지 않습니다.
+## stdio MCP RAG Agent
 
-## 학생용과 완성본
+기본 RAG를 이해한 다음에는 같은 pgvector 검색을 MCP Tool로 제공할 수 있습니다.
+Redis Cache 없이 `Agent → stdio MCP Server → pgvector → Agent 답변` 흐름만 확인합니다.
 
-- `starter`: 핵심 함수를 학생이 작성합니다.
-- `learning_unit`: 작은 단위 예제를 순서대로 실행합니다.
-- `backend`, `frontend`: 시간이 부족할 때 바로 시연하는 완성본입니다.
-- `solution`: 정답 코드 위치와 해설 순서를 안내합니다.
+```powershell
+cd C:\mini_agent_st\mini_agent_04_rag
+.\.venv\Scripts\Activate.ps1
+python .\mcp_rag_example\rag_agent.py
+```
+
+자세한 설명은 [`mcp_rag_example/README.md`](mcp_rag_example/README.md)를 확인합니다.
+
+## 테스트
+
+```powershell
+cd C:\mini_agent_st\mini_agent_04_rag\backend
+python -m pytest tests -q
+```

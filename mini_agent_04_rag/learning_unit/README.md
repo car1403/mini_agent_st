@@ -36,7 +36,10 @@ RAG는 LLM에게 바로 질문하지 않고, 먼저 관련 문서를 찾은 다�
 | 09 | `09_redis_rag_cache.py` | Backend·Docker 필요 | Redis MISS·HIT·TTL |
 | 10 | `10_full_rag_pipeline.py` | Backend·Docker 필요 | 전체 RAG Trace |
 | 11 | `11_text_insert_and_search.py` | Docker 필요 | 문장 입력·저장·유사도 검색 |
-| 12 | `12_pdf_index_and_search.py` | Docker·PDF 필요 | PDF 추출·Chunk·페이지 출처 |
+| 12-01 | `12_01_pdf_chunk.py` | Docker·PDF 필요 | PDF 추출·Chunk·pgvector 저장 |
+| 12-02 | `12_02_pdf_rag.py` | Docker·색인 필요 | 질문 Embedding·유사도 검색 |
+| 12-03 | `12_03_pdf_rag_ollama.py` | Docker·색인 필요 | 검색 Context·Ollama 근거 답변 |
+| 12-04 | `12_04_pdf_rag_cache.py` | Docker·색인 필요 | Redis MISS·HIT·TTL |
 | 13 | `13_agent_pgvector_tool.py` | Docker 필요 | Agent의 pgvector Tool 호출 |
 | 14 | `14_metadata_and_threshold.py` | Docker 필요 | JSONB Filter·유사도 임계값 |
 | 15 | `15_hybrid_search.py` | Docker 필요 | 키워드·벡터 검색과 RRF 결합 |
@@ -97,7 +100,10 @@ python .\10_full_rag_pipeline.py
 ```powershell
 cd C:\mini_agent_st\mini_agent_04_rag\learning_unit
 python .\11_text_insert_and_search.py
-python .\12_pdf_index_and_search.py C:\data\travel-policy.pdf --query "당일 취소 규정은?" --top-k 3
+python .\12_01_pdf_chunk.py
+python .\12_02_pdf_rag.py
+python .\12_03_pdf_rag_ollama.py
+python .\12_04_pdf_rag_cache.py
 python .\13_agent_pgvector_tool.py
 python .\14_metadata_and_threshold.py
 python .\15_hybrid_search.py
@@ -107,7 +113,20 @@ $env:RAG_AGENT_PROVIDER="ollama"
 python .\13_agent_pgvector_tool.py
 ```
 
-12는 텍스트가 포함된 PDF를 대상으로 합니다. 검색 결과에는 파일명과 페이지 번호가
+12 과정은 한 번에 한 개념씩 확인합니다.
+
+```text
+12-01 PDF → Chunk → Embedding → pgvector 저장
+12-02 질문 → Embedding → pgvector 유사도 검색
+12-03 검색 결과 → Context → Ollama 근거 답변
+12-04 동일 질문 → Redis MISS → 저장 → Redis HIT
+```
+
+PDF는 네 Python 파일과 같은 디렉터리에 `travel-policy.pdf`라는 이름으로 둡니다.
+다른 파일이나 질문을 사용하려면 각 예제 위쪽의 `PDF_PATH`, `QUESTION`, `TOP_K`만
+수정합니다. 초보 단계에서는 별도의 명령행 인자를 사용하지 않습니다.
+
+텍스트가 포함된 PDF를 대상으로 하며 검색 결과와 답변에는 파일명과 페이지 번호가
 표시됩니다. 이미지로 스캔된 PDF는 텍스트 추출 전에 별도 OCR 처리가 필요합니다.
 
 11~15가 공유하는 `_pgvector_store.py`는 다음 계약을 한곳에서 관리합니다.

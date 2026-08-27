@@ -1,11 +1,14 @@
 """MEMORY 과정의 Pydantic API 계약입니다."""
 
-from datetime import date
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, Field
 
-from app.schemas.common import MessageRequest, ProviderName
+from app.schemas.common import ProviderName
+
+
+MemoryStorage = Literal["mock", "postgres"]
+
 
 class ConversationMessage(BaseModel):
     role: Literal["user", "assistant", "tool"]
@@ -100,4 +103,3 @@ class HybridRestoreResult(BaseModel):
     long_term_memories: list[MemoryItem] = Field(default_factory=list)
     recent_messages: list[ConversationMessage] = Field(default_factory=list)
     trace: list[dict[str, Any]] = Field(default_factory=list)
-

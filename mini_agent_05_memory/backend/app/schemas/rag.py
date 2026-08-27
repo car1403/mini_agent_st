@@ -64,7 +64,3 @@ class RagIndexResult(BaseModel):
     collection: str
     indexed_count: int
     embedding_model: str
-
-
-MemoryStorage = Literal["mock", "postgres"]
-

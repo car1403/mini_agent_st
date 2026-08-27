@@ -1,4 +1,6 @@
-"""Mini Agent 03의 Tool 선택·실행·단일 Agent Cycle API를 제공합니다."""\n\nfrom dataclasses import asdict
+"""Mini Agent 03의 Tool 선택·실행·단일 Agent Cycle API를 제공합니다."""
+
+from dataclasses import asdict
 import json
 
 from fastapi import APIRouter, File, Form, HTTPException, Response, UploadFile

@@ -3,16 +3,16 @@ from uuid import uuid4
 import psycopg
 
 from app.core.config import settings
-from app.memory.policy import validate_memory_key
+from app.memory.policy import validate_memory
 from app.schemas import MemoryItem
 
 
 def connect():
-    return psycopg.connect(settings.database_url)
+    return psycopg.connect(settings.database_url, connect_timeout=3)
 
 
 def upsert(user_id: str, key: str, value: str) -> MemoryItem:
-    validate_memory_key(key)
+    validate_memory(key, value)
     with connect() as connection, connection.cursor() as cursor:
         cursor.execute(
             """

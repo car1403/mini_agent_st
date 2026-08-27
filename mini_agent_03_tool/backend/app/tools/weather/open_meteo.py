@@ -28,11 +28,21 @@ def _get(path: str, params: dict[str, Any], *, geocoding: bool = False) -> dict:
 
 
 def geocode_city(city: str) -> dict:
-    body = _get("/v1/search", {"name": city, "count": 1, "language": "ko", "format": "json"}, geocoding=True)
+    body = _get("/v1/search", {"name": city, "count": 10, "language": "ko", "format": "json"}, geocoding=True)
     results = body.get("results", [])
     if not results:
         raise ValueError(f"도시를 찾을 수 없습니다: {city}")
-    item = results[0]
+
+    # 동명 지역이 있으면 검색어와 이름·행정구역이 일치하는 큰 행정도시를 우선합니다.
+    item = max(
+        results,
+        key=lambda candidate: (
+            city in candidate.get("name", ""),
+            city in candidate.get("admin1", ""),
+            candidate.get("feature_code") in {"PPLC", "PPLA", "PPLA2"},
+            candidate.get("population", 0),
+        ),
+    )
     return {"name": item["name"], "admin1": item.get("admin1", ""), "latitude": item["latitude"], "longitude": item["longitude"]}
 
 

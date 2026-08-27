@@ -1,7 +1,6 @@
 fastapi
-google-genai
 httpx
-openai
+mcp>=1.27,<2
 pgvector
 psycopg[binary]
 pypdf

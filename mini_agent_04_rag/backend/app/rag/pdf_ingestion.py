@@ -43,6 +43,7 @@ def pdf_to_chunks(content: bytes, *, source: str, title: str) -> list[RagChunk]:
                 chunk_index=index,
                 metadata={
                     "input_type": "pdf",
+                    "source_id": source,
                     "page_number": page_number,
                     "page_chunk_index": page_chunk_index,
                     "file_sha256": digest,

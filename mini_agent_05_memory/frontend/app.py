@@ -13,26 +13,27 @@ prompt = st.Page("app_pages/07_prompt_builder.py", title="Prompt 구성")
 validation = st.Page("app_pages/08_pydantic_validation.py", title="Pydantic 검증")
 structured = st.Page("app_pages/09_structured_output.py", title="Structured Output")
 image_analysis = st.Page("app_pages/10_image_analysis.py", title="이미지 분석")
-tts = st.Page("app_pages/10_tts.py", title="음성 생성")
-tool_select = st.Page("app_pages/11_tool_select.py", title="Tool 선택")
-tool_run = st.Page("app_pages/12_tool_run.py", title="Tool 실행")
-tool_loop = st.Page("app_pages/13_tool_loop.py", title="Agent Loop")
-rag_concept = st.Page("app_pages/14_rag_concept.py", title="RAG 흐름")
-rag_chunks = st.Page("app_pages/15_rag_chunks.py", title="문서와 Chunk")
-rag_search = st.Page("app_pages/16_rag_search.py", title="문서 검색")
-rag_answer = st.Page("app_pages/17_rag_answer.py", title="근거 기반 답변")
-rag_pgvector = st.Page("app_pages/18_rag_pgvector.py", title="pgvector 실습")
-memory_types = st.Page("app_pages/19_memory_types.py", title="Memory 종류")
-conversation = st.Page("app_pages/20_conversation_window.py", title="대화 Window")
-memory_crud = st.Page("app_pages/21_memory_crud.py", title="Memory CRUD")
-memory_answer = st.Page("app_pages/22_memory_answer.py", title="개인화 답변")
-memory_storage = st.Page("app_pages/23_memory_storage.py", title="Redis·PostgreSQL")
-tool_schema = st.Page("app_pages/14_tool_schema.py", title="Tool Schema")
-tool_validation = st.Page("app_pages/15_tool_validation.py", title="Tool 입력 검증")
+tts = st.Page("app_pages/11_tts.py", title="음성 생성")
+tool_schema = st.Page("app_pages/12_tool_schema.py", title="Tool Schema")
+tool_select = st.Page("app_pages/13_tool_select.py", title="Tool 선택")
+tool_validation = st.Page("app_pages/14_tool_validation.py", title="Tool 입력 검증")
+tool_run = st.Page("app_pages/15_tool_run.py", title="Tool 실행")
 tool_errors = st.Page("app_pages/16_tool_errors.py", title="Tool 오류 처리")
-rag_limit = st.Page("app_pages/19_rag_limit.py", title="검색 결과 제한")
-memory_isolation = st.Page("app_pages/24_memory_isolation.py", title="사용자별 대화 분리")
-memory_restore = st.Page("app_pages/25_memory_restore.py", title="Hybrid Memory 복원")
+tool_loop = st.Page("app_pages/17_tool_loop.py", title="Agent Loop")
+rag_concept = st.Page("app_pages/18_rag_concept.py", title="RAG 흐름")
+rag_chunks = st.Page("app_pages/19_rag_chunks.py", title="문서와 Chunk")
+rag_search = st.Page("app_pages/20_rag_search.py", title="문서 검색")
+rag_limit = st.Page("app_pages/21_rag_limit.py", title="검색 결과 제한")
+rag_answer = st.Page("app_pages/22_rag_answer.py", title="근거 기반 답변")
+rag_pgvector = st.Page("app_pages/23_rag_pgvector.py", title="pgvector 실습")
+memory_types = st.Page("app_pages/24_memory_types.py", title="Memory 종류")
+conversation = st.Page("app_pages/25_conversation_window.py", title="대화 Window")
+memory_isolation = st.Page("app_pages/26_memory_isolation.py", title="사용자별 대화 분리")
+memory_crud = st.Page("app_pages/27_memory_crud.py", title="Memory CRUD")
+memory_answer = st.Page("app_pages/28_memory_answer.py", title="개인화 답변")
+memory_storage = st.Page("app_pages/29_memory_storage.py", title="Redis·PostgreSQL")
+memory_restore = st.Page("app_pages/30_memory_restore.py", title="Hybrid Memory 복원")
+memory_mcp = st.Page("app_pages/31_memory_mcp.py", title="PostgreSQL HTTP MCP")
 
 pages = [
     home, concept, travel, environment, llm, providers, prompt, validation,
@@ -40,6 +41,7 @@ pages = [
     tool_run, tool_errors, tool_loop, rag_concept, rag_chunks, rag_search,
     rag_limit, rag_answer, rag_pgvector, memory_types, conversation,
     memory_isolation, memory_crud, memory_answer, memory_storage, memory_restore,
+    memory_mcp,
 ]
 navigation = st.navigation(pages, position="hidden")
 
@@ -90,6 +92,7 @@ with st.sidebar:
         st.page_link(memory_answer, label="5-5. 개인화 답변")
         st.page_link(memory_storage, label="5-6. Redis·PostgreSQL")
         st.page_link(memory_restore, label="5-7. Hybrid 복원·Trace")
+        st.page_link(memory_mcp, label="5-8. PostgreSQL HTTP MCP")
 
     st.divider()
     st.caption("실행 환경")
