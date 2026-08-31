@@ -23,15 +23,15 @@ class AuthenticatedMemorySaveRequest(BaseModel):
 
     key: str = Field(min_length=1, max_length=100)
     value: str = Field(min_length=1, max_length=1000)
-    storage: MemoryStorage = "mock"
+    storage: MemoryStorage = "postgres"
 
 
 class AuthenticatedPersonalizeRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     question: str = Field(min_length=1, max_length=2000)
-    storage: MemoryStorage = "mock"
-    provider: ProviderName = "mock"
+    storage: MemoryStorage = "postgres"
+    provider: ProviderName = "openai"
 
 
 @authenticated_memory_router.post("/items", response_model=MemoryItem)
@@ -50,7 +50,7 @@ def save_my_memory(
 @authenticated_memory_router.get("/items", response_model=MemoryListResult)
 def get_my_memories(
     user_id: AuthenticatedUserId,
-    storage: MemoryStorage = "mock",
+    storage: MemoryStorage = "postgres",
 ) -> MemoryListResult:
     try:
         return MemoryListResult(
@@ -66,7 +66,7 @@ def get_my_memories(
 def delete_my_memory(
     memory_id: str,
     user_id: AuthenticatedUserId,
-    storage: MemoryStorage = "mock",
+    storage: MemoryStorage = "postgres",
 ) -> dict:
     try:
         return {"user_id": user_id, "deleted": delete_memory(storage, user_id, memory_id)}
@@ -95,7 +95,7 @@ def personalize_for_me(
 @authenticated_memory_router.get("/export")
 def export_my_memory(
     user_id: AuthenticatedUserId,
-    storage: MemoryStorage = "mock",
+    storage: MemoryStorage = "postgres",
 ) -> dict:
     try:
         return {
@@ -109,14 +109,10 @@ def export_my_memory(
 @authenticated_memory_router.delete("")
 def delete_all_my_memories(
     user_id: AuthenticatedUserId,
-    storage: MemoryStorage = "mock",
+    storage: MemoryStorage = "postgres",
 ) -> dict:
     try:
-        if storage == "postgres":
-            deleted = postgres_store.delete_all_for_user(user_id)
-        else:
-            items = list_memories("mock", user_id)
-            deleted = sum(delete_memory("mock", user_id, item.id) for item in items)
+        deleted = postgres_store.delete_all_for_user(user_id)
         return {"user_id": user_id, "deleted_memories": deleted}
     except Exception as error:
         raise HTTPException(status_code=503, detail=f"Memory 전체 삭제 실패: {error}") from error

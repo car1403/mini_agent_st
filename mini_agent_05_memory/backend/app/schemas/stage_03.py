@@ -51,7 +51,7 @@ class ToolSelectionResult(BaseModel):
 
 
 class ToolCompareRequest(MessageRequest):
-    providers: list[ProviderName] = Field(default_factory=lambda: ["mock"], min_length=1, max_length=4)
+    providers: list[ProviderName] = Field(default_factory=lambda: ["openai"], min_length=1, max_length=3)
 
 
 class ToolComparisonItem(BaseModel):
@@ -88,4 +88,3 @@ class ToolCompleteResult(BaseModel):
     decision: ToolSelectionResult
     tool_result: ToolRunResult | None = None
     final_answer: str
-

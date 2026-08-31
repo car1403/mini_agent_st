@@ -1,7 +1,7 @@
 # PostgreSQL Memory HTTP MCP
 
 Mini Agent 03 MCP와 같은 구조로 독립 MCP Server, Backend MCP Client, Streamlit 화면을
-연결합니다. 이 예제는 Mock 저장소를 사용하지 않고 기존 PostgreSQL Memory Service를
+연결합니다. 이 예제는 기존 PostgreSQL Memory Service를
 재사용합니다.
 
 ```text

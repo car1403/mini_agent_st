@@ -22,6 +22,6 @@ if __name__ == "__main__":
         print("A:", request("GET", "/api/memory/sessions/trip?user_id=user-a"))
         print("B:", request("GET", "/api/memory/sessions/trip?user_id=user-b"))
         print("TTL 연장:", request("GET", "/api/memory/sessions/trip?user_id=user-a&refresh_ttl=true"))
-        print("\n핵심: Redis Session Key는 사용자와 Session을 모두 구분해야 합니다.")
+        print("\n핵심: Redisㅁ Session Key는 사용자와 Session을 모두 구분해야 합니다.")
     except httpx.HTTPError as error:
         print_help(error)

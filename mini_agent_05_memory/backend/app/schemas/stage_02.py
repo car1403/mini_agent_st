@@ -50,7 +50,7 @@ class StructuredTravelResult(BaseModel):
 
 
 class StructuredCompareRequest(MessageRequest):
-    providers: list[ProviderName] = Field(default_factory=lambda: ["mock"], min_length=1, max_length=4)
+    providers: list[ProviderName] = Field(default_factory=lambda: ["openai"], min_length=1, max_length=3)
     system_prompt: str = Field(default="당신은 여행 계획 도우미입니다. TravelPlan Schema에 맞춰 작성하세요.", max_length=2000)
 
 
@@ -66,4 +66,3 @@ class StructuredComparisonItem(BaseModel):
 class StructuredCompareResult(BaseModel):
     request_count: int
     results: list[StructuredComparisonItem]
-

@@ -2,11 +2,14 @@
 
 from app.providers.base import LLMProvider
 from app.providers.gemini import GeminiProvider
-from app.providers.mock import MockProvider
 from app.providers.ollama import OllamaProvider
 from app.providers.openai import OpenAIProvider
 
-_PROVIDERS: dict[str,LLMProvider]={"mock":MockProvider(),"gemini":GeminiProvider(),"openai":OpenAIProvider(),"ollama":OllamaProvider()}
+_PROVIDERS: dict[str, LLMProvider] = {
+    "gemini": GeminiProvider(),
+    "openai": OpenAIProvider(),
+    "ollama": OllamaProvider(),
+}
 
 def get_provider(name:str)->LLMProvider:
     try: return _PROVIDERS[name]

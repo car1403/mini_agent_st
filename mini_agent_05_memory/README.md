@@ -20,28 +20,28 @@ Memory는 사용자의 선호와 현재 작업 상태를 다루고, RAG는 외�
 
 ## 초보자 권장 학습 경로
 
-### 1단계 · Docker 없이 핵심 이해
+### 1단계 · Python으로 핵심 이해
 
 1. `learning_unit/01_memory_types.py`
 2. `learning_unit/02_conversation_window.py`
 3. `learning_unit/03_user_memory_crud.py`
 4. `learning_unit/04_relevant_and_safe_memory.py`
-5. Backend와 Streamlit을 Mock 모드로 실행
-6. Memory 저장·조회·수정·삭제
-7. 저장 전·후·삭제 후 개인화 답변 비교
+5. PostgreSQL·Redis와 실제 LLM Provider 준비
+6. Backend와 Streamlit 실행
+7. Memory 저장·조회·수정·삭제
+8. 저장 전·후·삭제 후 개인화 답변 비교
 
 여기까지 진행해도 Memory의 핵심 원리는 학습할 수 있습니다.
 
-### 2단계 · Redis와 PostgreSQL
+### 2단계 · Redis와 PostgreSQL 기능 확인
 
 1. 공용 `infra` 실행
 2. `Redis·PostgreSQL` 화면에서 연결 상태 확인
 3. Redis Session 저장과 TTL 확인
-4. Memory 저장소를 `postgres`로 변경
-5. Backend 재시작 후 장기 Memory 유지 확인
-6. `Hybrid Memory 복원`에서 저장소별 Trace 확인
-7. `learning_unit/07~13`으로 TTL·충돌·대화·개인화·삭제 실습
-8. `learning_unit/10_labs/01~03`으로 동의·보존·인증 범위 정책 확인
+4. Backend 재시작 후 장기 Memory 유지 확인
+5. `Hybrid Memory 복원`에서 저장소별 Trace 확인
+6. `learning_unit/07~13`으로 TTL·충돌·대화·개인화·삭제 실습
+7. `learning_unit/10_labs/01~03`으로 동의·보존·인증 범위 정책 확인
 
 ## 화면과 학습 예제 연결
 
@@ -55,7 +55,18 @@ Memory는 사용자의 선호와 현재 작업 상태를 다루고, RAG는 외�
 | Redis·PostgreSQL | `05~10` | TTL, upsert와 대화 기록 |
 | Hybrid 복원·Trace | `11` | 두 저장소의 결과와 실패 분리 |
 
-## 실행 1 · Mock Memory
+## 실행 1 · Redis와 PostgreSQL 준비
+
+```powershell
+cd C:\mini_agent_st\infra
+Copy-Item .env.example .env
+docker compose up -d
+```
+
+기존 PostgreSQL Volume을 사용한다면 [공용 인프라 안내](../infra/README.md)에 따라
+수정된 `init.sql`을 적용합니다.
+
+## 실행 2 · 실제 PostgreSQL Memory와 LLM
 
 ```powershell
 cd C:\mini_agent_st\mini_agent_05_memory
@@ -76,19 +87,9 @@ cd C:\mini_agent_st\mini_agent_05_memory
 streamlit run .\frontend\app.py
 ```
 
-처음 네 Memory 화면은 Mock 저장소와 Mock Provider로 Docker 없이 실행할 수
-있습니다. Backend API는 `http://127.0.0.1:8000/docs`에서도 확인할 수 있습니다.
-
-## 실행 2 · Redis와 PostgreSQL
-
-```powershell
-cd C:\mini_agent_st\infra
-Copy-Item .env.example .env
-docker compose up -d
-```
-
-기존 PostgreSQL Volume을 사용한다면 [공용 인프라 안내](../infra/README.md)에 따라
-수정된 `init.sql`을 적용합니다.
+독립 Python 예제 01~04는 Docker 없이 실행할 수 있습니다. Backend와 화면의 장기
+Memory는 PostgreSQL만 사용하며 개인화 답변은 OpenAI·Gemini·Ollama 중 설정한 실제
+Provider를 호출합니다. Backend API는 `http://127.0.0.1:8000/docs`에서도 확인할 수 있습니다.
 
 ## Memory 전용 화면
 

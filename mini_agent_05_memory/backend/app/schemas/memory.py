@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 from app.schemas.common import ProviderName
 
 
-MemoryStorage = Literal["mock", "postgres"]
+MemoryStorage = Literal["postgres"]
 
 
 class ConversationMessage(BaseModel):
@@ -30,7 +30,7 @@ class MemorySaveRequest(BaseModel):
     user_id: str = Field(min_length=1, max_length=100)
     key: str = Field(min_length=1, max_length=100)
     value: str = Field(min_length=1, max_length=1000)
-    storage: MemoryStorage = "mock"
+    storage: MemoryStorage = "postgres"
 
 
 class MemoryItem(BaseModel):
@@ -49,8 +49,8 @@ class MemoryListResult(BaseModel):
 class MemoryPersonalizeRequest(BaseModel):
     user_id: str = Field(min_length=1, max_length=100)
     question: str = Field(min_length=1, max_length=2000)
-    storage: MemoryStorage = "mock"
-    provider: ProviderName = "mock"
+    storage: MemoryStorage = "postgres"
+    provider: ProviderName = "openai"
 
 
 class MemoryPersonalizeResult(BaseModel):

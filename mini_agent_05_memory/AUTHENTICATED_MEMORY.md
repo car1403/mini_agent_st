@@ -11,7 +11,7 @@ $headers = @{ "X-Demo-User-ID" = "user-a" }
 $body = @{
     key = "hotel_preference"
     value = "조용한 호텔"
-    storage = "mock"
+    storage = "postgres"
 } | ConvertTo-Json
 
 Invoke-RestMethod `

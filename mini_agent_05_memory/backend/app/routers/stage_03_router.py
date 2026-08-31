@@ -35,7 +35,7 @@ stage_03_router = APIRouter(tags=["03 · Tool과 Agent"])
 
 @stage_03_router.get("/api/tools")
 def tools() -> dict:
-    return {"tools": get_tool_definitions(), "note": "모든 Tool은 조회용 Mock이며 실제 예약이나 결제를 실행하지 않습니다."}
+    return {"tools": get_tool_definitions(), "note": "Tool은 실제 공개 API를 조회하며 예약이나 결제는 실행하지 않습니다."}
 
 
 @stage_03_router.post("/api/tools/select", response_model=ToolSelectionResult)
@@ -95,13 +95,10 @@ def complete_tool_loop(payload: ToolCompleteRequest) -> ToolCompleteResult:
     if not tool_result.success:
         return ToolCompleteResult(provider=selected, question=payload.message, decision=decision, tool_result=tool_result, final_answer="Tool을 안전하게 실행하지 못했습니다. 입력과 권한을 확인해 주세요.")
 
-    if selected == "mock":
-        final_answer = f"{decision.tool_name} 조회 결과입니다: {json.dumps(tool_result.data, ensure_ascii=False)}"
-    else:
-        prompt = f"사용자 질문: {payload.message}\nTool 이름: {decision.tool_name}\nTool Result: {json.dumps(tool_result.data, ensure_ascii=False)}"
-        try:
-            final_answer = str(generate(selected, "Tool Result에 있는 값만 사용해 친절한 한국어 최종 답변을 작성하세요.", prompt).content)
-        except Exception as error:
-            final_answer = f"Tool 실행은 성공했지만 최종 답변 생성에 실패했습니다: {error}"
+    prompt = f"사용자 질문: {payload.message}\nTool 이름: {decision.tool_name}\nTool Result: {json.dumps(tool_result.data, ensure_ascii=False)}"
+    try:
+        final_answer = str(generate(selected, "Tool Result에 있는 값만 사용해 친절한 한국어 최종 답변을 작성하세요.", prompt).content)
+    except Exception as error:
+        final_answer = f"Tool 실행은 성공했지만 최종 답변 생성에 실패했습니다: {error}"
 
     return ToolCompleteResult(provider=selected, question=payload.message, decision=decision, tool_result=tool_result, final_answer=final_answer)

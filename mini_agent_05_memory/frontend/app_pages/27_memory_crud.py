@@ -8,13 +8,13 @@ st.title("5-4. 사용자 Memory CRUD")
 st.caption("모든 요청에 user_id를 넣어 사용자별 Memory를 격리합니다.")
 st.warning("이 화면의 user_id 선택은 수업용입니다. 실제 서비스는 인증 토큰에서 사용자 ID를 확인해야 합니다.")
 
-storage = st.radio("저장소", ["mock", "postgres"], horizontal=True)
+storage = "postgres"
+st.caption("장기 Memory 저장소: PostgreSQL")
 user_id = st.selectbox("사용자", ["student-01", "student-02"])
 key = st.selectbox("Memory key", ["transportation", "food_restriction", "hotel_preference", "password"])
 value = st.text_input("값", "대중교통")
 
-if storage == "postgres":
-    st.warning("PostgreSQL을 사용하려면 Docker와 Memory 스키마가 준비되어야 합니다.")
+st.warning("PostgreSQL과 Memory 스키마가 준비되어야 합니다.")
 
 if st.button("저장 또는 수정", type="primary"):
     try:

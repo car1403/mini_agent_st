@@ -52,7 +52,7 @@ python .\05_memory\00_check_environment.py
 | `REDIS_TTL_SECONDS` | `1800` | Redis Session |
 | `DATABASE_URL` | PostgreSQL `127.0.0.1:5433` | 06, 09~13 |
 | `BACKEND_API_URL` | `http://127.0.0.1:8000` | 07~13 |
-| `MEMORY_EXAMPLE_PROVIDER` | `mock` | 12 |
+| `MEMORY_EXAMPLE_PROVIDER` | `openai` | 12 |
 | `REQUEST_TIMEOUT_SECONDS` | `30` | 07~13 API 요청 |
 | `MEMORY_MCP_URL` | `http://127.0.0.1:8012/mcp` | PostgreSQL HTTP MCP Client |
 | `MCP_DEMO_USER_ID` | `student-01` | 교육용 MCP 사용자 범위 |
@@ -127,7 +127,7 @@ Codex 또는 MCP Client
 → PostgreSQL user_memories
 ```
 
-[30_mcp/README.md](./30_mcp/README.md)의 PostgreSQL Server와 Client를 실행합니다. 이 선택 예제는 Mock 저장소를 사용하지 않습니다.
+[30_mcp/README.md](./30_mcp/README.md)의 PostgreSQL Server와 Client를 실행합니다. 이 예제도 실제 PostgreSQL만 사용합니다.
 Tool 인자에서 `user_id`를 제거하고 서버가 확인한 사용자 범위를 쓰는 이유도 함께
 확인합니다.
 
@@ -152,7 +152,7 @@ cd C:\mini_agent_st\mini_agent_05_memory\backend
 uvicorn app.main:app --reload --port 8000
 
 cd C:\aidevs\05_llm-agent-orchestration\05_memory
-$env:MEMORY_EXAMPLE_PROVIDER="ollama"  # mock, gemini, openai, ollama
+$env:MEMORY_EXAMPLE_PROVIDER="openai"  # openai, gemini, ollama
 python .\07_redis_ttl_and_isolation.py
 python .\08_redis_atomic_update.py
 python .\09_postgres_upsert_and_isolation.py

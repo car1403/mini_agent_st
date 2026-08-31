@@ -43,7 +43,7 @@ class RagSearchResult(BaseModel):
 
 
 class RagAnswerRequest(RagSearchRequest):
-    provider: ProviderName = "mock"
+    provider: ProviderName = "openai"
 
 
 class RagAnswerResult(BaseModel):

@@ -42,7 +42,7 @@ class GenerateResult(BaseModel):
 
 
 class ProviderCompareRequest(MessageRequest):
-    providers: list[ProviderName] = Field(default_factory=lambda: ["mock"], min_length=1, max_length=4)
+    providers: list[ProviderName] = Field(default_factory=lambda: ["openai"], min_length=1, max_length=3)
     system_prompt: str = Field(default="당신은 초보자를 돕는 친절한 여행 도우미입니다.", max_length=2000)
 
 
@@ -72,4 +72,3 @@ class TtsRequest(BaseModel):
     text: str = Field(min_length=1, max_length=2000)
     voice: Literal["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer", "verse", "marin", "cedar"] | None = None
     instructions: str = Field(default="한국어로 또렷하고 따뜻한 여행 가이드처럼 말하세요.", max_length=500)
-

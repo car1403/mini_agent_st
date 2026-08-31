@@ -5,8 +5,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-ProviderName = Literal["mock", "gemini", "openai", "ollama"]
+ProviderName = Literal["gemini", "openai", "ollama"]
 
 class MessageRequest(BaseModel):
     message: str = Field(min_length=1, max_length=4000)
-

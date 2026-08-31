@@ -40,15 +40,12 @@ def answer(query: str, mode: str, top_k: int, provider: str) -> RagAnswerResult:
         f"[{item.source}] {item.content}" for item in results
     )
     sources = sorted({item.source for item in results})
-    if provider == "mock":
-        answer_text = results[0].content
-    else:
-        prompt = f"질문: {query}\n\nContext:\n{context}"
-        system_prompt = (
-            "Context에 있는 내용만 사용해 한국어로 답하세요. "
-            "Context에 근거가 없으면 모른다고 답하세요."
-        )
-        answer_text = str(generate(provider, system_prompt, prompt).content)
+    prompt = f"질문: {query}\n\nContext:\n{context}"
+    system_prompt = (
+        "Context에 있는 내용만 사용해 한국어로 답하세요. "
+        "Context에 근거가 없으면 모른다고 답하세요."
+    )
+    answer_text = str(generate(provider, system_prompt, prompt).content)
 
     return RagAnswerResult(
         answer=answer_text,

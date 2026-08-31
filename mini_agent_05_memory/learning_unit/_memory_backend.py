@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 ROOT = Path(__file__).resolve().parents[1]
 load_dotenv(ROOT / ".env")
 BASE_URL = os.getenv("BACKEND_API_URL", "http://127.0.0.1:8000").rstrip("/")
-PROVIDER = os.getenv("MEMORY_EXAMPLE_PROVIDER", "mock")
+PROVIDER = os.getenv("MEMORY_EXAMPLE_PROVIDER", os.getenv("LLM_PROVIDER", "openai"))
 REQUEST_TIMEOUT_SECONDS = float(os.getenv("REQUEST_TIMEOUT_SECONDS", "30"))
 
 

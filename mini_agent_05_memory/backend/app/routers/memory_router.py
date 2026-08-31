@@ -48,7 +48,7 @@ def save_memory(payload: MemorySaveRequest) -> MemoryItem:
 
 
 @memory_router.get("/items/{user_id}", response_model=MemoryListResult)
-def get_memories(user_id: str, storage: MemoryStorage = "mock") -> MemoryListResult:
+def get_memories(user_id: str, storage: MemoryStorage = "postgres") -> MemoryListResult:
     try:
         return MemoryListResult(user_id=user_id, storage=storage, items=list_memories(storage, user_id))
     except Exception as error:
@@ -56,7 +56,7 @@ def get_memories(user_id: str, storage: MemoryStorage = "mock") -> MemoryListRes
 
 
 @memory_router.delete("/items/{user_id}/{memory_id}")
-def remove_memory(user_id: str, memory_id: str, storage: MemoryStorage = "mock") -> dict:
+def remove_memory(user_id: str, memory_id: str, storage: MemoryStorage = "postgres") -> dict:
     try:
         return {"deleted": delete_memory(storage, user_id, memory_id)}
     except Exception as error:

@@ -7,7 +7,8 @@ from core.api_client import BackendAPIError
 st.title("5-5. 관련 Memory와 개인화 답변")
 st.caption("질문과 관련된 Memory만 선택해 Prompt에 넣습니다.")
 
-storage = st.radio("저장소", ["mock", "postgres"], horizontal=True)
+storage = "postgres"
+st.caption("장기 Memory 저장소: PostgreSQL")
 user_id = st.selectbox("사용자", ["student-01", "student-02"])
 question = st.selectbox(
     "질문",
@@ -18,7 +19,7 @@ question = st.selectbox(
         "부산 날씨를 알려줘",
     ],
 )
-provider = st.selectbox("답변 Provider", ["mock", "gemini", "openai", "ollama"])
+provider = st.selectbox("답변 Provider", ["openai", "gemini", "ollama"])
 
 st.info("먼저 Memory CRUD 메뉴에서 현재 사용자의 선호를 저장하세요.")
 if st.button("개인화 답변 만들기", type="primary"):
