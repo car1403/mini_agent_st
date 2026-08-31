@@ -4,7 +4,7 @@ from clients.agent_client import personalize_with_memory
 from core.api_client import BackendAPIError
 
 
-st.title("4️⃣ Memory를 사용한 개인화 답변")
+st.title("5-5. 관련 Memory와 개인화 답변")
 st.caption("질문과 관련된 Memory만 선택해 Prompt에 넣습니다.")
 
 storage = st.radio("저장소", ["mock", "postgres"], horizontal=True)

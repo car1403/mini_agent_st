@@ -4,7 +4,7 @@ from clients.agent_client import preview_conversation_window
 from core.api_client import BackendAPIError
 
 
-st.title("2️⃣ 대화 Window")
+st.title("5-2. 대화 Window")
 st.caption("전체 대화 대신 최근 메시지와 오래된 대화의 요약만 사용합니다.")
 
 messages = [

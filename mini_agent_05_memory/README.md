@@ -1,7 +1,7 @@
 # Mini Agent 05 · Memory
 
-Mini Agent 04의 RAG 기능에 대화 Window, Redis 단기 상태, PostgreSQL 장기 사용자
-Memory와 Hybrid 복원을 추가한 누적형 완성본입니다.
+대화 Window, Redis 단기 상태, PostgreSQL 장기 사용자 Memory와 Hybrid 복원을
+한 단계에서 학습하는 Memory 전용 미니 프로젝트입니다. 이전 01~04 화면은 반복하지 않습니다.
 
 ## 무엇을 배우나요?
 
@@ -90,6 +90,13 @@ docker compose up -d
 기존 PostgreSQL Volume을 사용한다면 [공용 인프라 안내](../infra/README.md)에 따라
 수정된 `init.sql`을 적용합니다.
 
+## Memory 전용 화면
+
+```text
+Memory 종류 → 대화 Window → 사용자 범위 → CRUD
+→ 관련 Memory와 개인화 → Redis·PostgreSQL → Hybrid 복원 → HTTP MCP
+```
+
 ## 프로젝트 구조
 
 ```text
@@ -100,7 +107,7 @@ mini_agent_05_memory/
 ```
 
 - `learning_unit`: 개념을 작은 Python 예제로 먼저 확인합니다.
-- `backend`: Mock, Redis, PostgreSQL과 LLM을 하나의 API로 연결합니다.
+- `backend`: Memory API, Redis, PostgreSQL과 개인화 LLM을 연결합니다.
 - `frontend`: 저장 전후 상태와 Trace를 화면에서 비교합니다.
 
 독립 예제의 원본은 `C:\aidevs\05_llm-agent-orchestration\05_memory`입니다.

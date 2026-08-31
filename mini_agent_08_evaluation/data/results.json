@@ -1,0 +1,8 @@
+{
+  "normal_order_waits_for_approval":{"status":"waiting_approval","termination_reason":"approval_required","trace":[{"step":1,"stage":"read_tool_executed","tool":"search_product"},{"step":2,"stage":"read_tool_executed","tool":"check_inventory"},{"step":3,"stage":"read_tool_executed","tool":"calculate_order_total"},{"step":4,"stage":"paused_for_approval","tool":"place_order"}]},
+  "approved_order_completes_once":{"status":"completed","termination_reason":"model_finished","trace":[{"step":4,"stage":"change_approved","tool":"place_order"},{"step":4,"stage":"approved_change_executed","tool":"place_order"}]},
+  "rejected_order_does_not_execute":{"status":"rejected","termination_reason":"user_rejected","trace":[{"step":4,"stage":"change_rejected","tool":"place_order"}]},
+  "different_actor_is_blocked":{"status":"blocked","termination_reason":"actor_not_owner","trace":[{"step":4,"stage":"approval_owner_check_failed","tool":"place_order"}]},
+  "tampered_snapshot_is_blocked":{"status":"blocked","termination_reason":"approval_target_changed","trace":[{"step":4,"stage":"approval_snapshot_check_failed","tool":"place_order"}]},
+  "duplicate_approval_executes_once":{"status":"blocked","termination_reason":"already_processed","trace":[{"step":4,"stage":"approved_change_executed","tool":"place_order"},{"step":5,"stage":"duplicate_execution_blocked","tool":"place_order"}]}
+}

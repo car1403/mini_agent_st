@@ -37,15 +37,14 @@ mini_agent_sam
 | `mini_agent_03_tool` | Schema·선택·안전 실행·Tool Result 최종 답변 |
 | `mini_agent_03_mcp` | 별도 Streamable HTTP MCP Server의 Tool 발견·호출 |
 | `mini_agent_04_rag` | Chunk·키워드 검색·근거 답변·Ollama/pgvector |
-| `mini_agent_05_memory` | 대화 Window·사용자 CRUD·개인화·Redis·PostgreSQL |
-| `mini_agent_06_langgraph` | 일반 Python→State·Node·Edge·분기·반복·Checkpoint |
-| `mini_agent_07_human_approval` | 중단·저장·재개 |
-| `mini_agent_08_evaluation` | 시나리오 평가와 Trace·누적 완성 Backend와 Frontend |
+| `mini_agent_05_memory` | Memory 전용 8개 화면·사용자 CRUD·개인화·Redis·PostgreSQL·HTTP MCP |
+| `mini_agent_06_agent_workflow` | 공통 Python Runtime으로 Travel·Support·Order Single Agent 독립 실행 |
+| `mini_agent_07_human_approval` | 변경 Tool 승인 Snapshot·중단·재개·멱등성·Audit |
+| `mini_agent_08_evaluation` | Safe Order Agent의 Scenario·Check·Trace·Regression |
 | `optional_multimodal_agent` | 선택 심화: 이미지→Agent→승인→TTS |
 
-`09_integrated-agent-lab`은 새 프로젝트를 복사하지 않고
-`mini_agent_08_evaluation`의 `backend_python`, `backend_langgraph`, `frontend`를
-함께 실행하여 전체 흐름을 확인합니다.
+`09_integrated-agent-lab`은 다음 과정에서 별도 통합 프로젝트로 구성합니다.
+08은 평가 학습에만 집중하며 통합 Backend 역할을 겸하지 않습니다.
 
 `optional_multimodal_agent`는 정규 번호에 포함하지 않습니다. 01~08을 마친 뒤
 전체 멀티모달 연결을 시연할 때만 사용합니다.
@@ -54,20 +53,22 @@ mini_agent_sam
 
 | 구간 | 학생 실습 | 시간이 부족할 때 |
 | --- | --- | --- |
-| 01~05 | `learning_unit → starter → test → solution` | 제공된 Backend·Frontend로 동작 확인 |
-| 06 | Python 기초 예제와 `steps → starter → solution` | 두 완성 Backend·Frontend 비교 |
-| 07~08 | `learning_unit → steps` | 완성 Backend·Frontend로 승인·평가 시연 |
+| 01~04 | `learning_unit → starter → test → solution` | 제공된 Backend·Frontend로 동작 확인 |
+| 05 | Memory 전용 8개 화면과 `learning_unit` | Mock 핵심 후 Redis·PostgreSQL·HTTP MCP 확장 |
+| 06 | 화면에서 독립 Single Agent 선택·실행 | LangGraph 선택 비교 예제 확인 |
+| 07 | 대표 Order Agent에 변경 Tool 승인·거절 적용 | LangGraph interrupt 선택 비교 |
+| 08 | 저장된 결과로 전체 Scenario 평가 | 한 화면에서 실패 Trace 확인 |
 
-07~08은 누적 코드가 커지는 시점이므로 같은 코드를 다시 복사한 `starter`와
-`solution`을 두지 않습니다. 학생은 작은 `steps`를 수정하고, 전체 연결은 완성
-Backend와 Frontend에서 확인합니다.
+07은 06의 Order Agent 하나를 대표 사례로 선택해 실제 승인 흐름을 깊게 확인하고
+`starter`와 `solution`을 두지 않습니다. Travel·Support 승인은 문서의 확장 사례로만
+설명합니다. 08은 07 Agent의 저장 결과와 한 화면 Dashboard로 회귀 평가를 배웁니다.
 
 ## 매 단원의 학습 순서
 
 ```text
 BEGINNER_GUIDE.md 읽기
-→ learning_unit 또는 steps의 작은 예제 실행
-→ Mock 결과 확인
+→ learning_unit 또는 단계별 작은 예제 실행
+→ 저장 Fixture 결과 확인
 → 제공된 경우 starter TODO 작성
 → 작은 테스트 실행
 → 제공된 경우 solution과 비교

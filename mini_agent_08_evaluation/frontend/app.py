@@ -1,96 +1,82 @@
-"""mini_frontend와 같은 초보자용 Streamlit 멀티페이지 앱입니다."""
+import os
 
+import requests
 import streamlit as st
 
-from core.state import init_state
-from core.ui import render_backend_selector
 
+API_BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8008")
 
-st.set_page_config(page_title="Mini Agent 08", page_icon="📊", layout="wide")
-init_state()
+st.set_page_config(page_title="Mini Agent 08", page_icon="🧪", layout="wide")
+st.title("🧪 Safe Order Agent 평가")
+st.caption("Scenario → Check → Trace → Regression")
+st.info(
+    "07에서 만든 Safe Order Agent의 저장된 실행 결과를 6개 안전 Scenario로 검사합니다. "
+    "실제 주문이나 OpenAI API는 호출하지 않습니다."
+)
 
-home_page = st.Page("app_pages/01_home.py", title="HOME", default=True)
-environment_page = st.Page("app_pages/02_environment.py", title="환경 상태")
-llm_page = st.Page("app_pages/03_llm.py", title="LLM과 구조화")
-tool_page = st.Page("app_pages/04_tool.py", title="Tool")
-knowledge_page = st.Page("app_pages/05_knowledge_memory.py", title="RAG와 Memory")
-agent_page = st.Page("app_pages/06_agent.py", title="Agent 실행")
-why_page = st.Page("app_pages/07_why_evaluate.py", title="평가가 필요한 이유")
-one_page = st.Page("app_pages/08_one_scenario.py", title="시나리오 하나")
-multiple_page = st.Page("app_pages/09_multiple_scenarios.py", title="여러 시나리오")
-trace_page = st.Page("app_pages/10_trace_failure.py", title="Trace 실패 찾기")
-regression_page = st.Page("app_pages/11_regression.py", title="회귀 테스트")
-provider_page = st.Page("app_pages/12_provider_comparison.py", title="Provider 비교 (선택)")
-llm_evaluation_page = st.Page("app_pages/13_real_llm_evaluation.py", title="실제 LLM 평가")
-storage_page = st.Page("app_pages/14_evaluation_storage.py", title="평가 이력 저장")
+inject_regression = st.checkbox(
+    "학습용 회귀 오류 넣기",
+    help="정상 주문이 승인 대기를 건너뛰고 place_order를 실행한 결과로 바꿉니다.",
+)
 
-pages = [
-    home_page,
-    environment_page,
-    llm_page,
-    tool_page,
-    knowledge_page,
-    agent_page,
-    why_page,
-    one_page,
-    multiple_page,
-    trace_page,
-    regression_page,
-    provider_page,
-    llm_evaluation_page,
-    storage_page,
-]
+if st.button("전체 평가 실행", type="primary", use_container_width=True):
+    try:
+        response = requests.post(
+            f"{API_BASE_URL}/api/evaluations/run",
+            json={"inject_regression": inject_regression},
+            timeout=10,
+        )
+        response.raise_for_status()
+        st.session_state["report"] = response.json()
+    except requests.RequestException as error:
+        st.error(f"Backend에 연결할 수 없습니다: {error}")
 
-navigation = st.navigation(pages, position="hidden")
+report = st.session_state.get("report")
+if report:
+    total, passed, failed, gate = st.columns(4)
+    total.metric("전체 Scenario", report["total"])
+    passed.metric("통과", report["passed"])
+    failed.metric("실패", report["failed"])
+    gate.metric("Safety Gate", report["safety_gate"])
 
-with st.sidebar:
-    st.title("📊 Mini Agent 08")
-    st.caption("05 과정 · 08_agent-evaluation-and-tracing")
-    st.page_link(home_page, label="🏠 HOME")
+    if report["safety_gate"] == "PASS":
+        st.success("모든 안전 조건을 통과했습니다.")
+    else:
+        st.error("Safety Critical Scenario가 실패했습니다. 배포하면 안 됩니다.")
 
-    st.divider()
-    with st.expander("01. LLM에서 Agent로", expanded=False):
-        st.page_link(llm_page, label="1단계 핵심 복습")
+    st.subheader("Scenario 결과")
+    for result in report["results"]:
+        icon = "✅" if result["passed"] else "❌"
+        with st.expander(f"{icon} {result['description']}", expanded=not result["passed"]):
+            left, right = st.columns(2)
+            left.write(f"기대 상태: `{result['expected_status']}`")
+            right.write(f"실제 상태: `{result['actual_status']}`")
+            st.write("실행 Tool:", result["executed_tools"] or "없음")
+            st.write("검사 결과:", result["checks"])
+            if result["failed_checks"]:
+                st.warning("실패한 검사: " + ", ".join(result["failed_checks"]))
+            st.markdown("**Trace**")
+            st.json(result["trace"])
+else:
+    st.write("`전체 평가 실행`을 눌러 6개 Scenario를 확인하세요.")
 
-    st.divider()
-    with st.expander("02. Prompt와 구조화 출력", expanded=False):
-        st.page_link(llm_page, label="2단계 핵심 복습")
-
-    st.divider()
-    with st.expander("03. Tool Use", expanded=False):
-        st.page_link(tool_page, label="3단계 핵심 복습")
-
-    st.divider()
-    with st.expander("04. RAG", expanded=False):
-        st.page_link(knowledge_page, label="4단계 핵심 복습")
-
-    st.divider()
-    with st.expander("05. Memory", expanded=False):
-        st.page_link(knowledge_page, label="5단계 핵심 복습")
-
-    st.divider()
-    with st.expander("06. LangGraph Workflow", expanded=False):
-        st.caption("Mini Agent 06에서 Graph 흐름을 복습합니다.")
-
-    st.divider()
-    with st.expander("07. Human Approval과 Safety", expanded=False):
-        st.page_link(agent_page, label="7단계 승인 흐름 복습")
-
-    st.divider()
-    with st.expander("08. Evaluation과 Tracing", expanded=True):
-        st.page_link(why_page, label="8-1. 평가가 필요한 이유")
-        st.page_link(one_page, label="8-2. 시나리오 하나")
-        st.page_link(multiple_page, label="8-3. 여러 시나리오")
-        st.page_link(trace_page, label="8-4. Trace 실패 찾기")
-        st.page_link(regression_page, label="8-5. 회귀 테스트")
-        st.page_link(provider_page, label="8-6. Provider 비교 (선택)")
-        st.page_link(llm_evaluation_page, label="8-7. 실제 LLM 평가")
-        st.page_link(storage_page, label="8-8~9. 평가 이력과 Trace")
-
-    st.divider()
-    st.caption("실행 환경과 완성본")
-    render_backend_selector()
-    st.page_link(environment_page, label="🩺 환경 상태")
-    st.page_link(agent_page, label="🧭 완성 Agent")
-
-navigation.run()
+st.divider()
+with st.expander("선택 · 실행 중인 Mini Agent 07 평가"):
+    st.caption("07의 OpenAI Agent와 HTTP MCP Server가 실행 중일 때 정상 주문 요청 한 건을 평가합니다.")
+    live_url = st.text_input("Mini Agent 07 Backend", "http://127.0.0.1:8000")
+    if st.button("07 실제 실행 결과 평가"):
+        try:
+            response = requests.post(
+                f"{API_BASE_URL}/api/evaluations/live",
+                json={"api_base_url": live_url},
+                timeout=100,
+            )
+            response.raise_for_status()
+            live = response.json()["result"]
+            if live["passed"]:
+                st.success("실제 07 Agent가 정상 주문 승인 대기 Scenario를 통과했습니다.")
+            else:
+                st.error("실제 07 Agent 결과가 기대 행동과 다릅니다.")
+            st.json(live)
+        except requests.RequestException as error:
+            st.error(f"Live 평가 실패: {error}")

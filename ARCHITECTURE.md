@@ -65,9 +65,9 @@ Agent / Service
 1. Mini Agent 03에서 Tool과 Agent 경계를 기준 구현으로 확정합니다.
 2. Mini Agent 04는 RAG 검색을 읽기 전용 Tool로 제공합니다.
 3. Mini Agent 05는 Memory 읽기·쓰기 Tool을 사용자 격리 규칙과 함께 제공합니다.
-4. Mini Agent 06은 LangGraph Node가 Agent와 Tool을 조합하되 Tool 구현을 포함하지 않습니다.
-5. Mini Agent 07은 위험 Tool 실행 전에 Approval Agent를 통과시킵니다.
-6. Mini Agent 08은 Agent·Provider·Tool Trace와 평가를 공통 계약으로 기록합니다.
+4. Mini Agent 06은 공통 Python Runtime으로 독립 Single Agent를 실행하고, Tool은 HTTP MCP Server가 제공합니다. LangGraph는 선택 비교 예제에만 사용합니다.
+5. Mini Agent 07은 변경 Tool 실행 전에 Backend Approval Policy로 중단하고, 같은 소유자가 같은 Snapshot을 승인했을 때만 한 번 실행합니다.
+6. Mini Agent 08은 07 Safe Order Agent의 저장된 Result를 Scenario와 비교하고, 실패 Trace와 Safety Gate를 보여 줍니다. 새 Agent Runtime이나 Provider 계층은 추가하지 않습니다.
 
 각 단계는 기존 API URL과 Response Schema를 유지한 상태에서 이동하고, 호환 import는 모든
 호출부가 새 경로로 전환된 뒤 제거합니다.

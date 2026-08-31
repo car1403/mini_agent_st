@@ -7,7 +7,7 @@ from clients.agent_client import (
 from core.api_client import BackendAPIError
 
 
-st.title("🔄 Hybrid Memory 복원")
+st.title("5-7. Hybrid Memory 복원")
 st.caption("Redis 단기 상태와 PostgreSQL 장기 Memory·대화를 사용자별로 결합합니다.")
 
 user_id = st.text_input("user_id", "user-a")

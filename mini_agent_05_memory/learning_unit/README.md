@@ -54,7 +54,7 @@ python .\05_memory\00_check_environment.py
 | `BACKEND_API_URL` | `http://127.0.0.1:8000` | 07~13 |
 | `MEMORY_EXAMPLE_PROVIDER` | `mock` | 12 |
 | `REQUEST_TIMEOUT_SECONDS` | `30` | 07~13 API 요청 |
-| `MEMORY_MCP_URL` | `http://127.0.0.1:8002/mcp` | HTTP MCP Client |
+| `MEMORY_MCP_URL` | `http://127.0.0.1:8012/mcp` | PostgreSQL HTTP MCP Client |
 | `MCP_DEMO_USER_ID` | `student-01` | 교육용 MCP 사용자 범위 |
 
 ## 학습 목표
@@ -122,12 +122,12 @@ TTL, 충돌, 사용자 격리와 복원 과정을 확인합니다.
 
 ```text
 Codex 또는 MCP Client
-→ http://127.0.0.1:8002/mcp
+→ http://127.0.0.1:8012/mcp
 → 사용자 범위 Memory Tool
-→ Mock Memory Store
+→ PostgreSQL user_memories
 ```
 
-처음에는 [30_mcp/README.md](./30_mcp/README.md)의 Mock Server와 Client를 실행합니다.
+[30_mcp/README.md](./30_mcp/README.md)의 PostgreSQL Server와 Client를 실행합니다. 이 선택 예제는 Mock 저장소를 사용하지 않습니다.
 Tool 인자에서 `user_id`를 제거하고 서버가 확인한 사용자 범위를 쓰는 이유도 함께
 확인합니다.
 

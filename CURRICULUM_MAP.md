@@ -8,11 +8,11 @@
 | `03_tool-use` | `mini_agent_03_tool/learning_unit` | Schema·선택·안전 실행·Agent Loop |
 | `04_rag` | `mini_agent_04_rag/learning_unit` | Chunk·검색·근거 제한·Ollama Embedding·pgvector |
 | `05_memory` | `mini_agent_05_memory/learning_unit` | 대화 Window·사용자 격리·개인화·Redis·PostgreSQL |
-| `06_langgraph-workflow` 준비 | `mini_agent_06_langgraph/python_workflow_steps` | 일반 Python 조건 분기와 실행 순서 |
-| `06_langgraph-workflow` | `mini_agent_06_langgraph/learning_unit` | 초보자 Graph·분기·Reducer·반복·Checkpoint |
-| `07_human-approval-and-safety` | `mini_agent_07_human_approval/learning_unit` | 승인 중단·재개 |
-| `08_agent-evaluation-and-tracing` | `mini_agent_08_evaluation/learning_unit` | 평가와 Trace |
-| `09_integrated-agent-lab` | `mini_agent_08_evaluation` 전체 | 두 Backend·Frontend 통합 실행과 최종 확장 |
+| `06_agent-workflow` | `mini_agent_06_agent_workflow` | 독립 Single Agent 3개·공통 Python Loop·Tool 권한·종료 Trace |
+| `06_agent-workflow` 선택 | `mini_agent_06_agent_workflow/10_optional_langgraph` | 같은 Travel Agent의 Python Loop와 LangGraph 비교 |
+| `07_human-approval-and-safety` | `mini_agent_07_human_approval` | Safe Order Agent의 주문 승인·거절·Snapshot·멱등성·Audit |
+| `08_agent-evaluation-and-tracing` | `mini_agent_08_evaluation` | Safe Order Agent의 Scenario·Check·Trace·Regression |
+| `09_integrated-agent-lab` | 별도 구성 예정 | 다음 과정의 통합 Mini Project |
 
 ## 선택 심화
 
@@ -38,6 +38,6 @@ learning_unit 개념 예제
 ```
 
 - 01~05는 `starter`에서 작성하고 `solution`과 비교합니다.
-- 06은 Python Workflow·LangGraph `steps`와 `starter/solution`을 함께 사용합니다.
-- 07~08은 작은 `steps`를 학생 실습으로 사용하고 누적 완성 Backend·Frontend에서
-  전체 동작을 확인합니다.
+- 06은 완성된 독립 Single Agent 서비스에서 Agent별 Goal·Tool·종료를 비교하고 LangGraph는 선택 예제로 확인합니다.
+- 07은 06의 Order Agent를 대표 사례로 승인 경계를 깊게 적용하고, 08은 그 Agent의
+  저장된 실행 결과를 같은 평가 규칙으로 검사하고 실패 Trace를 확인합니다.

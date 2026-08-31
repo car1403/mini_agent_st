@@ -4,7 +4,7 @@ from clients.agent_client import delete_memory, list_memories, save_memory
 from core.api_client import BackendAPIError
 
 
-st.title("3️⃣ 사용자 Memory CRUD")
+st.title("5-4. 사용자 Memory CRUD")
 st.caption("모든 요청에 user_id를 넣어 사용자별 Memory를 격리합니다.")
 st.warning("이 화면의 user_id 선택은 수업용입니다. 실제 서비스는 인증 토큰에서 사용자 ID를 확인해야 합니다.")
 

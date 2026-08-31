@@ -1,7 +1,7 @@
 import streamlit as st
 
 
-st.title("5-3. 사용자별 대화 분리")
+st.title("5-3. 인증 사용자 범위")
 st.caption("같은 Memory 저장소에서도 user_id별로 데이터를 분리합니다.")
 
 memories = {

@@ -1,33 +1,54 @@
-# Mini Agent 08 · Evaluation과 Tracing
+# Mini Agent 08 · Evaluation
 
-완성한 여행 Agent를 작은 시나리오로 반복 검사하고, 실패하면 Trace에서 원인을 찾습니다.
+07에서 만든 **Safe Order Agent**를 Scenario로 평가하는 초보자용 미니 프로젝트입니다. 새로운 Agent를 하나 더 만드는 단계가 아니라, 이미 만든 Agent가 올바르고 안전하게 행동하는지 확인하는 단계입니다.
 
-## Backend 공통 구조
+```text
+저장된 Agent Result
+  → Scenario별 Check
+  → 실패 Trace 확인
+  → 전체 Regression 재실행
+```
 
-두 Backend 모두 Mini Agent 03의 공통 계층 구조를 따르며 Evaluation만 `services/evaluation_service.py`와 `evaluation_router.py`, Evaluation Schema로 확장합니다. Provider·Tool·RAG·Memory·Agent Router는 서로 분리된 Swagger 그룹을 사용합니다.
+## 화면에서 확인하는 것
 
-## 학습 순서
+- 전체 6개 Scenario의 통과·실패 수
+- Safety Critical Scenario가 모두 통과했는지 나타내는 Safety Gate
+- 기대 상태와 실제 상태
+- 실제 실행된 Tool과 검사 결과
+- 실패 지점을 찾기 위한 Trace
 
-| 메뉴 | 주제 | 핵심 실습 |
-|---|---|---|
-| 8-1 | 평가가 필요한 이유 | 실행 성공과 올바른 행동 구분 |
-| 8-2 | 시나리오 하나 | 입력·기대·실제 결과 비교 |
-| 8-3 | 여러 시나리오 | 실제 평가 API와 통과율 |
-| 8-4 | Trace 실패 찾기 | 처음 실패한 검사 확인 |
-| 8-5 | 회귀 테스트 | 기준 결과와 현재 결과 비교 |
-| 8-6 | Provider 비교 | GPT·Gemini·Ollama 선택 확장 |
-| 8-7 | 실제 LLM 평가 | 구조화 응답의 안정적인 필드 검사 |
-| 8-8 | PostgreSQL 평가 이력 | 실행별 결과 저장과 회귀 조회 |
-| 8-9 | Redis Trace 캐시 | 최근 실패 Trace의 TTL 저장 |
+기본 평가는 모두 통과합니다. `학습용 회귀 오류 넣기`를 선택하면 정상 주문이 승인 대기를 건너뛰고 `place_order`를 실행한 결과를 만들어, Safety Gate가 실패하는 과정을 확인할 수 있습니다.
 
-8-1~8-5는 Mock 기반이며 외부 API Key 없이 반복할 수 있습니다. 8-6~8-7은 실제 Provider 설정과 비용을 확인합니다. 8-8은 `DATABASE_URL`, 8-9는 `REDIS_URL`을 사용합니다.
+## 실행
 
-## 폴더 역할
+```powershell
+cd C:\mini_agent_st\mini_agent_08_evaluation
+python -m pip install -r requirements.txt
+python -m uvicorn backend.app.main:app --reload --port 8008
+```
 
-- `learning_unit`: 강의 예제·실습·과제
-- `steps`: 메뉴 8-1~8-9와 같은 순서의 실행 예제
-- `backend_python`: 일반 Python Agent와 평가 API
-- `backend_langgraph`: LangGraph Agent와 같은 평가 API
-- `frontend`: 평가 결과·Trace·회귀 비교 화면
+새 터미널에서 실행합니다.
 
-평가 보고서에는 API Key, 전체 시스템 Prompt, 개인정보를 저장하지 않습니다.
+```powershell
+cd C:\mini_agent_st\mini_agent_08_evaluation
+python -m streamlit run frontend\app.py
+```
+
+## 파일 구조
+
+```text
+backend/app/evaluation/   평가 규칙과 전체 실행
+backend/app/routers/      평가 HTTP API
+backend/app/schemas/      요청 Schema
+data/scenarios.json       기대 행동 6개
+data/results.json         저장된 07 Agent 실행 결과
+frontend/app.py           한 화면 평가 Dashboard
+```
+
+`data/results.json`은 새로운 Mock Agent가 아니라 결정적인 회귀 평가를 위한 저장 Fixture입니다. 실제 07 API를 연결할 때는 응답을 같은 `status`, `termination_reason`, `trace` 형식으로 바꾼 뒤 동일한 평가 함수에 전달하면 됩니다. HTTP `409` 거절은 평가에서 `blocked` 상태로 정규화합니다.
+
+OpenAI, PostgreSQL, Redis, LangGraph와 MCP Server는 이 단계의 필수 실행에 포함하지 않습니다. 08의 핵심은 기술을 더 붙이는 것이 아니라 **Scenario → Check → Trace → Regression**을 이해하는 것입니다.
+
+## 선택 · 실행 중인 07 Agent 평가
+
+Mini Agent 07의 OpenAI Agent, HTTP MCP Server와 Backend를 먼저 실행하면 화면 아래의 선택 영역에서 실제 주문 요청 한 건을 가져와 동일한 평가 규칙으로 검사할 수 있습니다. 기본 Fixture 평가는 외부 서비스 없이 그대로 사용할 수 있습니다.

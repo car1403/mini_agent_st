@@ -4,7 +4,7 @@ from clients.agent_client import delete_session, get_memory_status, get_session,
 from core.api_client import BackendAPIError
 
 
-st.title("5️⃣ Redis 단기 상태와 PostgreSQL 장기 Memory")
+st.title("5-6. Redis 단기 상태와 PostgreSQL 장기 Memory")
 st.caption("Docker를 사용하는 마지막 실습입니다.")
 
 st.code("cd C:\\mini_agent_st\\infra\ndocker compose up -d", language="powershell")

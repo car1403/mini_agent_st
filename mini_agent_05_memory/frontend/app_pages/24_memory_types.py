@@ -4,7 +4,7 @@ from clients.agent_client import get_memory_types
 from core.api_client import BackendAPIError
 
 
-st.title("1️⃣ Memory 종류")
+st.title("5-1. Memory 종류")
 st.caption("대화 기록·단기 상태·장기 Memory·RAG 문서를 먼저 구분합니다.")
 
 try:
