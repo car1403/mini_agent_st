@@ -52,8 +52,6 @@ Mini Project 06
 Model → MCP Tool → Result → Model → 완료 또는 중단
 ```
 
-LangGraph는 메인 실행에 필요하지 않습니다. `10_optional_langgraph`에서 같은 Travel Agent를 Graph로 표현했을 때의 차이만 비교합니다.
-
 ## AI Agent, Workflow, Runtime과 MCP
 
 | 영역 | 책임 |
@@ -62,7 +60,6 @@ LangGraph는 메인 실행에 필요하지 않습니다. `10_optional_langgraph`
 | Agent Runtime | Loop, Tool Result 전달, 최대 단계와 종료 이유 관리 |
 | Backend Workflow | Agent 선택, Tool Allowlist와 arguments 검증 |
 | HTTP MCP Server | Backend 밖에서 Tool Schema와 실제 실행 제공 |
-| LangGraph 선택 예제 | 같은 Loop를 State·Node·Edge로 표현 |
 
 AI Agent가 순서를 계획할 수 있고 Python Runtime 없이 직접 동작하는 것처럼 보일 수 있지만, 실제 Tool 실행과 반복을 연결하는 애플리케이션 코드는 항상 필요합니다. 반드시 강제할 권한과 입력 검증은 Model이 아니라 Backend가 책임집니다.
 
@@ -112,7 +109,6 @@ backend/app/
 
 mcp_server/business_tools_server.py
 frontend/app.py
-10_optional_langgraph/travel_agent_graph.py
 ```
 
 ## 실행 준비
@@ -149,15 +145,14 @@ streamlit run frontend\app.py --server.port 8501
 
 브라우저에서 `http://127.0.0.1:8501`을 열고 Agent를 선택합니다.
 
-## 선택 LangGraph 비교
+## 테스트
 
-Travel Agent를 선택 프레임워크로 비교할 때만 실행합니다.
+외부 OpenAI API나 MCP Server를 실행하지 않고 Runtime의 종료 조건과 API 입력 검증을
+확인합니다.
 
 ```powershell
-python .\10_optional_langgraph\travel_agent_graph.py
+pytest -q
 ```
-
-메인 Python Runtime과 동일한 Agent Profile, OpenAI Model과 MCP Tool을 사용합니다. 달라지는 것은 Loop의 표현 방식뿐입니다.
 
 ## 포함하지 않는 범위
 
