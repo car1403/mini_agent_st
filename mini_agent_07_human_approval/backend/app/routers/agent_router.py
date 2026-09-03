@@ -3,9 +3,14 @@ from fastapi import APIRouter, HTTPException
 from app.mcp.client import connection_status
 from app.schemas.agent import AgentRequest, AgentResponse, ApprovalDecision
 from app.services.agent_service import audit_for_run, decide, find_run, start
+from app.progress.store import read_progress
 
 
 router = APIRouter(prefix="/api/agents", tags=["Human Approval and Safety"])
+
+@router.get("/runs/{run_id}/progress")
+def progress(run_id: str):
+    return read_progress(run_id)
 
 
 @router.get("/mcp-status")

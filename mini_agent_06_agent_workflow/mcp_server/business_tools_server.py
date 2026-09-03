@@ -1,10 +1,14 @@
 """세 독립 Single Agent의 Tool을 제공하는 Streamable HTTP MCP Server입니다."""
 
 import os
+from pathlib import Path
 
+from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+load_dotenv(PROJECT_ROOT / ".env")
 MCP_HOST = os.getenv("MCP_HOST", "127.0.0.1")
 MCP_PORT = int(os.getenv("MCP_PORT", "8010"))
 
@@ -42,6 +46,8 @@ def get_weather(city: str) -> dict:
 def search_indoor_places(city: str) -> dict:
     """비 오는 날에 적합한 실내 장소를 검색합니다."""
     city = city.strip()
+    if not city:
+        return {"success": False, "city": city, "error": "INVALID_CITY"}
     return {"success": True, "city": city, "category": "indoor", "items": INDOOR.get(city, [])}
 
 
@@ -49,6 +55,8 @@ def search_indoor_places(city: str) -> dict:
 def search_outdoor_places(city: str) -> dict:
     """맑은 날에 적합한 야외 장소를 검색합니다."""
     city = city.strip()
+    if not city:
+        return {"success": False, "city": city, "error": "INVALID_CITY"}
     return {"success": True, "city": city, "category": "outdoor", "items": OUTDOOR.get(city, [])}
 
 
@@ -75,6 +83,8 @@ def search_return_policy() -> dict:
 def search_product(query: str) -> dict:
     """상품명으로 상품 ID와 가격을 검색합니다."""
     normalized = query.strip().lower()
+    if not normalized:
+        return {"success": False, "query": query, "error": "INVALID_QUERY", "items": []}
     items = [
         {"product_id": product_id, "name": data["name"], "price": data["price"]}
         for product_id, data in PRODUCTS.items()

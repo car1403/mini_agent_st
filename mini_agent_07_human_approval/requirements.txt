@@ -3,8 +3,11 @@ httpx
 langgraph
 mcp>=1.27,<2
 openai
+psycopg[binary]
 pydantic
 python-dotenv
+redis
 requests
 streamlit
 uvicorn[standard]
+pytest

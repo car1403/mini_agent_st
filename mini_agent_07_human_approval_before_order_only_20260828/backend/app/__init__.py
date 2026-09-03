@@ -1,1 +1,0 @@
-"""Independent Single Agent service."""

@@ -121,7 +121,9 @@ pip install -r requirements.txt
 Copy-Item .env.example .env
 ```
 
-`.env`의 `OPENAI_API_KEY`를 실제 값으로 설정합니다.
+`.env`의 `OPENAI_API_KEY`를 실제 값으로 설정합니다. Backend, MCP Server와 Frontend는
+모두 프로젝트 루트의 같은 `.env`를 읽으므로 필요하면 Model, 포트와 API 주소도 이
+파일에서 변경할 수 있습니다.
 
 ## 실행 순서
 

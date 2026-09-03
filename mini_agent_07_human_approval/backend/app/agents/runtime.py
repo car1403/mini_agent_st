@@ -8,8 +8,9 @@ from app.agents.registry import get_agent
 from app.approval.policies import action_risk
 from app.approval.store import PROCESSED_CALLS, add_audit, get_run, save_run
 from app.core.config import MAX_AGENT_STEPS, OPENAI_MODEL
-from app.mcp.client import call_tool, discover_tools
+from app.mcp.client import call_tool, discover_tools, discover_tools_with_annotations
 from app.providers.openai import create_client, first_response, next_response
+from app.progress.store import publish
 
 
 def public_result(state: dict[str, Any]) -> dict[str, Any]:
@@ -24,11 +25,12 @@ def public_result(state: dict[str, Any]) -> dict[str, Any]:
 async def _advance(profile: AgentProfile, state: dict[str, Any], response: Any) -> dict[str, Any]:
     """읽기는 실행하고 변경 Tool 직전에 승인 대기 상태로 중단합니다."""
     client = create_client()
-    tools = await discover_tools(profile.allowed_tools)
+    tools, annotations_by_tool = await discover_tools_with_annotations(profile.allowed_tools)
     for step in range(state.get("next_step", 1), MAX_AGENT_STEPS + 1):
         calls = [item for item in response.output if item.type == "function_call"]
         if not calls:
             state.update(status="completed", termination_reason="model_finished", answer=response.output_text)
+            publish(state["run_id"], "completed", "Agent 실행이 완료됐습니다.", 100, "completed")
             state["trace"].append(
                 {"step": step, "owner": "ai_agent", "stage": "model_final_answer", "text": response.output_text}
             )
@@ -37,6 +39,7 @@ async def _advance(profile: AgentProfile, state: dict[str, Any], response: Any) 
             return public_result(state)
 
         call = calls[0]
+        publish(state["run_id"], "model_selected_tool", f"Model이 {call.name} Tool을 선택했습니다.", min(20 + step * 10, 75), "running")
         try:
             arguments = json.loads(call.arguments)
             if not isinstance(arguments, dict):
@@ -51,7 +54,7 @@ async def _advance(profile: AgentProfile, state: dict[str, Any], response: Any) 
             save_run(state)
             return public_result(state)
 
-        risk = action_risk(call.name)
+        risk = action_risk(annotations_by_tool.get(call.name))
         state["trace"].append(
             {"step": step, "owner": "ai_agent", "stage": "model_selected_tool", "tool": call.name, "risk": risk}
         )
@@ -86,10 +89,12 @@ async def _advance(profile: AgentProfile, state: dict[str, Any], response: Any) 
                 {"step": step, "owner": "policy", "stage": "paused_for_approval", "approval_target": target}
             )
             save_run(state)
+            publish(state["run_id"], "waiting_approval", "사용자 승인을 기다리고 있습니다.", 80, "waiting_approval")
             return public_result(state)
 
         try:
             result, trace = await call_tool(call.name, arguments, profile.allowed_tools)
+            publish(state["run_id"], "tool_completed", f"{call.name} Tool 실행을 완료했습니다.", min(30 + step * 10, 70), "running")
             state["tool_calls"] += 1
             state["trace"].append({"step": step, "owner": "mcp", "stage": "read_tool_executed", **trace})
             output = {
@@ -131,6 +136,7 @@ async def start_single_agent(profile: AgentProfile, question: str, actor_id: str
         "pending_approval": None,
         "next_step": 1,
     }
+    publish(state["run_id"], "queued", "Agent 실행 요청을 접수했습니다.", 5, "queued")
     try:
         tools = await discover_tools(profile.allowed_tools)
         names = {tool["name"] for tool in tools}
@@ -138,6 +144,7 @@ async def start_single_agent(profile: AgentProfile, question: str, actor_id: str
         if missing:
             raise RuntimeError(f"MCP Server에 필요한 Tool이 없습니다: {sorted(missing)}")
         state["trace"].append({"owner": "mcp", "stage": "tools_discovered", "tools": sorted(names)})
+        publish(state["run_id"], "tools_discovered", "MCP Tool을 확인했습니다.", 15, "running")
         response = await first_response(create_client(), question, profile.instructions, tools)
         state["llm_calls"] = 1
         return await _advance(profile, state, response)
@@ -181,6 +188,7 @@ async def resume_after_decision(
         state["trace"].append({"owner": "human", "stage": "change_rejected", **event})
         add_audit(event)
         save_run(state)
+        publish(run_id, "rejected", "사용자가 변경 요청을 거절했습니다.", 100, "rejected")
         return public_result(state)
 
     pending = state["pending_call"]
@@ -188,10 +196,15 @@ async def resume_after_decision(
     if call_key in PROCESSED_CALLS:
         raise ValueError("이미 실행된 승인 요청입니다.")
     profile = get_agent(state["agent_id"])
-    if pending["tool"] not in profile.allowed_tools or action_risk(pending["tool"]) != "change":
+    _, annotations_by_tool = await discover_tools_with_annotations(profile.allowed_tools)
+    if (
+        pending["tool"] not in profile.allowed_tools
+        or action_risk(annotations_by_tool.get(pending["tool"])) != "change"
+    ):
         raise ValueError("현재 Agent 정책에서 허용된 변경 Tool이 아닙니다.")
 
     result, trace = await call_tool(pending["tool"], pending["arguments"], profile.allowed_tools)
+    publish(run_id, "approved_change_executed", "승인된 변경 Tool을 실행했습니다.", 90, "running")
     PROCESSED_CALLS.add(call_key)
     state["tool_calls"] += 1
     event["result"] = result

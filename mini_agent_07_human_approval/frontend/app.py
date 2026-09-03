@@ -59,6 +59,20 @@ if st.button("안전 Order Agent 실행", type="primary", use_container_width=Tr
 
 result = st.session_state.run_result
 if result:
+    @st.fragment(run_every="1s")
+    def render_live_progress(run_id: str):
+        try:
+            progress_data = get(f"/api/agents/runs/{run_id}/progress")
+        except requests.RequestException:
+            return
+        live = progress_data.get("state", {})
+        percent = int(live.get("progress", 0))
+        st.progress(percent, text=live.get("message", "진행 상태를 확인하고 있습니다."))
+        with st.expander("실시간 실행 Timeline", expanded=True):
+            for event in progress_data.get("events", []):
+                st.write(f"{event.get('created_at', '')} · {event.get('message', event.get('stage'))}")
+
+    render_live_progress(result["run_id"])
     if result["status"] == "waiting_approval":
         pending = result["pending_approval"]
         target = pending["approval_target"]
